@@ -27,7 +27,6 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 
 	user.Id = primitive.NewObjectID()
 	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, user)
 	if err != nil {
