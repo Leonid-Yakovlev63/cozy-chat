@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/dto"
@@ -50,12 +51,12 @@ func (h *authHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.userService.Register(r.Context(), req.Username, req.Password)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
-	case service.ErrUserAlreadyExists:
-		http.Error(w, `{"error":"user already exists"}`, http.StatusConflict)
+	case errors.Is(err, service.ErrUserAlreadyExists):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusConflict)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}
@@ -72,12 +73,12 @@ func (h *authHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, err := h.authService.Login(r.Context(), req.Username, req.Password)
-	switch err {
-	case nil:
+	switch {
+	case err == nil:
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"token": token})
-	case service.ErrUserNotFound, service.ErrInvalidPassword:
-		http.Error(w, `{"error":"invalid credentials"}`, http.StatusUnauthorized)
+	case errors.Is(err, service.ErrUserNotFound), errors.Is(err, service.ErrInvalidPassword):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusUnauthorized)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}

@@ -25,7 +25,7 @@ func NewUserRepository(db *mongo.Database) repository.UserRepository {
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 
-	user.Id = primitive.NewObjectID()
+	user.ID = primitive.NewObjectID()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 

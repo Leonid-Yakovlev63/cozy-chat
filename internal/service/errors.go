@@ -3,8 +3,11 @@ package service
 import "errors"
 
 var (
-	ErrUserAlreadyExists = errors.New("пользователь с данным username уже зарегестрирован")
-	ErrUserNotFound      = errors.New("пользователь не найден")
-	ErrInvalidPassword   = errors.New("неправильный пароль")
-	ErrInvalidStruct     = errors.New("ошибка валидации")
+	ErrUserAlreadyExists = errors.New("user with this username is already exists")
+	ErrUserNotFound      = errors.New("user not found")
+	ErrInvalidPassword   = errors.New("invalid password")
+	ErrInvalidStruct     = errors.New("validation error")
+
+	ErrSentMessage          = errors.New("error sending message")
+	ErrFromUserEqualsToUser = errors.New("you cannot send a message to yourself")
 )

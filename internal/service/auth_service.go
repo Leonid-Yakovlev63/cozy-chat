@@ -44,7 +44,8 @@ func (s *authService) Login(ctx context.Context, username, password string) (str
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Subject:   user.Username,
+		Subject: user.Username,
+
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.expiration)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	})
