@@ -13,13 +13,14 @@ import (
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/repository/mongorepository"
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/service"
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/transport/rest"
+	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/transport/web"
 	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Run() {
+func Run(enableWeb bool) {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -92,6 +93,17 @@ func Run() {
 	messageHandler := rest.NewMessageHandler(messageService, authService, appValidator)
 	messageHandler.RegisterRoutes(mux)
 
+	slog.Info("Старт приложения")
+
+	if enableWeb {
+		webHandler, err := web.NewPageHandler("web/templates", "web/static")
+		if err != nil {
+			log.Fatalf("Ошибка инициализации web handler: %v", err)
+		}
+		webHandler.RegisterRoutes(mux)
+		slog.Info("Home page: http://localhost:8080/")
+	}
+
 	// Swagger
 	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "openapi.yaml")
@@ -101,7 +113,6 @@ func Run() {
 		http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
 	})
 
-	slog.Info("Старт приложения")
 	slog.Info("Swagger: http://localhost:8080/swagger/")
 
 	err = http.ListenAndServe(":8080", mux)

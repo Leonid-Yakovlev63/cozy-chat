@@ -1,0 +1,33 @@
+{{ define "layout" }}
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    
+    <header class="site-header">
+      <div class="wrapper">
+        <nav class="nav" aria-label="Основная навигация">
+          <a class="skip-link" href="#content">Перейти к контенту</a>
+          <a href="/">Home</a>
+          <a href="/first-page">First Page</a>
+          <a href="/second-page">Second Page</a>
+          <a href="/thrid-page">Thrid Page</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content" class="wrapper content" tabindex="-1">
+      <section class="card">
+        {{ template "content" . }}
+      </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
+{{ end }}
