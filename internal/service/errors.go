@@ -8,6 +8,9 @@ var (
 	ErrInvalidPassword   = errors.New("invalid password")
 	ErrInvalidStruct     = errors.New("validation error")
 
-	ErrSentMessage          = errors.New("error sending message")
-	ErrFromUserEqualsToUser = errors.New("you cannot send a message to yourself")
+	ErrSendMessage              = errors.New("error sending message")
+	ErrFromUserEqualsToUser     = errors.New("you cannot send a message to yourself")
+	ErrReadMessagesFromYourself = errors.New("you cannot read a messages from yourself")
+	// ???
+	ErrReadSomeoneElsesCorrespondence = errors.New("reading someone else's correspondence")
 )

@@ -25,11 +25,13 @@ func NewUserRepository(db *mongo.Database) repository.UserRepository {
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 
-	user.ID = primitive.NewObjectID()
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
+	var userToCreate userDB = *toUserDB(user)
 
-	_, err := r.collection.InsertOne(ctx, user)
+	userToCreate.ID = primitive.NewObjectID()
+	userToCreate.CreatedAt = time.Now()
+	userToCreate.UpdatedAt = time.Now()
+
+	_, err := r.collection.InsertOne(ctx, userToCreate)
 	if err != nil {
 		slog.Error("Ошибка при добавлении пользователя")
 		return err
