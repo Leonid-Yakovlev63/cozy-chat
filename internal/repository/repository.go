@@ -14,6 +14,10 @@ type (
 
 	MessageRepository interface {
 		Create(ctx context.Context, message domain.Message) error
-		FindLatestMessagesBetweenUsers(ctx context.Context, firstUser, secondUser string, limit int64) ([]domain.Message, error)
+		FindLatestMessagesBetweenUsers(
+			ctx context.Context,
+			firstUser, secondUser string,
+			limit int64,
+		) ([]domain.Message, error)
 	}
 )
