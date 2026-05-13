@@ -1,0 +1,40 @@
+.auth-top-bar {
+  flex-shrink: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.auth-top-bar__inner {
+  max-width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auth-top-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.auth-top-bar__logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 22%, var(--color-surface)), var(--color-surface));
+  box-shadow: 0 8px 24px rgba(20, 12, 8, 0.1);
+}
+
+.auth-top-bar__title {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}

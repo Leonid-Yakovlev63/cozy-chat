@@ -1,0 +1,103 @@
+/* Темы: атрибут data-theme на элементе <html> */
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-text-muted: rgba(17, 24, 39, 0.58);
+  --color-placeholder: rgba(17, 24, 39, 0.4);
+  --color-border: rgba(17, 24, 39, 0.1);
+  --color-accent: #2563eb;
+  --color-accent-strong: #1d4ed8;
+  --color-on-accent: #ffffff;
+  --color-warm: #93c5fd;
+  --color-danger: #b91c1c;
+  --color-success: #15803d;
+  --color-focus: #2563eb;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #1a1b1e;
+  --color-surface: #25262c;
+  --color-text: #ececf1;
+  --color-text-muted: rgba(236, 236, 241, 0.55);
+  --color-placeholder: rgba(236, 236, 241, 0.35);
+  --color-border: rgba(255, 255, 255, 0.09);
+  --color-accent: #8b8fd9;
+  --color-accent-strong: #a5b4fc;
+  --color-on-accent: #14151a;
+  --color-warm: #4b5563;
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+  --color-focus: #93c5fd;
+}
+
+html[data-theme='coffee'] {
+  color-scheme: light;
+  --color-bg: #f6f0ea;
+  --color-surface: #fffaf6;
+  --color-text: #1f1410;
+  --color-text-muted: rgba(31, 20, 16, 0.62);
+  --color-placeholder: rgba(31, 20, 16, 0.42);
+  --color-border: rgba(31, 20, 16, 0.12);
+  --color-accent: #d97757;
+  --color-accent-strong: #b4532a;
+  --color-on-accent: #fffaf6;
+  --color-warm: #f0c987;
+  --color-danger: #b42318;
+  --color-success: #166534;
+  --color-focus: #2f6feb;
+}
+
+html[data-theme='lunar'] {
+  color-scheme: dark;
+  --color-bg: #0b1020;
+  --color-surface: #121a30;
+  --color-text: #f0f4fc;
+  --color-text-muted: rgba(240, 244, 252, 0.62);
+  --color-placeholder: rgba(240, 244, 252, 0.38);
+  --color-border: rgba(200, 220, 255, 0.12);
+  --color-accent: #6b9cff;
+  --color-accent-strong: #9ec0ff;
+  --color-on-accent: #0b1020;
+  --color-warm: #2d4a7c;
+  --color-danger: #ff8a8a;
+  --color-success: #6ee7b7;
+  --color-focus: #93c5fd;
+}
+
+html[data-theme='sunny'] {
+  color-scheme: light;
+  --color-bg: #fffef5;
+  --color-surface: #ffffff;
+  --color-text: #1c1917;
+  --color-text-muted: rgba(28, 25, 23, 0.58);
+  --color-placeholder: rgba(28, 25, 23, 0.4);
+  --color-border: rgba(202, 138, 4, 0.18);
+  --color-accent: #eab308;
+  --color-accent-strong: #ca8a04;
+  --color-on-accent: #1c1204;
+  --color-warm: #fde047;
+  --color-danger: #b91c1c;
+  --color-success: #15803d;
+  --color-focus: #ca8a04;
+}
+
+html[data-theme='mars'] {
+  color-scheme: dark;
+  --color-bg: #1a0808;
+  --color-surface: #2c1010;
+  --color-text: #fef2f2;
+  --color-text-muted: rgba(254, 242, 242, 0.58);
+  --color-placeholder: rgba(254, 242, 242, 0.36);
+  --color-border: rgba(248, 113, 113, 0.18);
+  --color-accent: #f87171;
+  --color-accent-strong: #ef4444;
+  --color-on-accent: #1a0808;
+  --color-warm: #7f1d1d;
+  --color-danger: #fecaca;
+  --color-success: #86efac;
+  --color-focus: #fb923c;
+}

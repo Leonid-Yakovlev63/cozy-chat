@@ -1,4 +1,5 @@
 import { LogoutControl } from '@/features/logout'
+import { ThemeSwitch } from '@/features/theme-switch'
 import '@/widgets/app-header/ui/AppHeader.scss'
 
 type AppHeaderProps = {
@@ -12,6 +13,7 @@ export function AppHeader({ username }: AppHeaderProps) {
         <h1 className="app-header__title">Cozy Chat</h1>
       </div>
       <div className="app-header__actions">
+        <ThemeSwitch />
         <div className="app-header__user">
           <span className="app-header__user-label">Вы вошли как</span>
           <span className="app-header__user-name">{username ?? '…'}</span>

@@ -1,18 +1,6 @@
+@use './themes' as *;
+
 :root {
-  color-scheme: light;
-  --color-bg: #f6f0ea;
-  --color-surface: #fffaf6;
-  --color-text: #1f1410;
-  --color-text-muted: rgba(31, 20, 16, 0.62);
-  --color-placeholder: rgba(31, 20, 16, 0.42);
-  --color-border: rgba(31, 20, 16, 0.12);
-  --color-accent: #d97757;
-  --color-accent-strong: #b4532a;
-  --color-on-accent: #fffaf6;
-  --color-warm: #f0c987;
-  --color-danger: #b42318;
-  --color-success: #166534;
-  --color-focus: #2f6feb;
   --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;

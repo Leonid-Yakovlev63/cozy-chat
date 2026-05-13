@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { LoginForm } from '@/features/login-form'
 import { AuthCard } from '@/widgets/auth-card'
+import { AuthTopBar } from '@/widgets/auth-top-bar'
 import { useSession } from '@/entities/session'
 import '@/pages/login/ui/LoginPage.scss'
 
@@ -10,18 +11,13 @@ export function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-page__shell">
-        <div className="auth-page__brand" aria-hidden="true">
-          <div className="auth-page__logo" />
-          <div className="auth-page__brand-text">
-            <p className="auth-page__brand-title">Cozy Chat</p>
-            <p className="auth-page__brand-subtitle">Frontend</p>
-          </div>
+      <AuthTopBar />
+      <div className="auth-page__body">
+        <div className="auth-page__shell">
+          <AuthCard title="Вход" subtitle="Введите логин и пароль.">
+            <LoginForm />
+          </AuthCard>
         </div>
-
-        <AuthCard title="Вход" subtitle="Введите учётные данные, чтобы получить JWT и открыть переписки.">
-          <LoginForm />
-        </AuthCard>
       </div>
     </div>
   )
