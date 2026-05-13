@@ -1,4 +1,5 @@
 import { parseMessageCodeFences } from '@/shared/lib/parseMessageCodeFences'
+import { isSingleEmojiMessage } from '@/shared/lib/isSingleEmojiMessage'
 import { CodeBlock } from '@/shared/ui/code-block/CodeBlock'
 import '@/shared/ui/message-rich-text/MessageRichText.scss'
 
@@ -14,7 +15,9 @@ export function MessageRichText({ content, className }: MessageRichTextProps) {
   if (!hasCode) {
     const only = segments[0]
     const text = only?.type === 'text' ? only.value : content
-    return <p className={className}>{text}</p>
+    const loneEmoji = isSingleEmojiMessage(text)
+    const textClass = [className, loneEmoji ? 'message-bubble__text--lone-emoji' : ''].filter(Boolean).join(' ')
+    return <p className={textClass}>{text}</p>
   }
 
   return (

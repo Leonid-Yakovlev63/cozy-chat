@@ -155,8 +155,11 @@
   overflow-wrap: anywhere;
 }
 
-.message-bubble__text.message-rich-text {
-  white-space: normal;
+.message-bubble__text--lone-emoji {
+  font-size: clamp(2.25rem, 9vmin, 3.35rem);
+  line-height: 1.12;
+  text-align: center;
+  padding-block: 0.15rem;
 }
 
 .message-bubble__status {

@@ -1,0 +1,94 @@
+.emoji-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.emoji-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg));
+  color: var(--color-text);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.emoji-menu__trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.emoji-menu__trigger:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.emoji-menu__trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.emoji-menu__trigger-icon {
+  user-select: none;
+  pointer-events: none;
+}
+
+.emoji-menu__popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.35rem);
+  z-index: 45;
+  width: min(18.5rem, calc(100vw - 2rem));
+  max-height: min(14rem, 42vh);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  background: var(--color-surface);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.15rem;
+}
+
+.emoji-menu__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-width: 0;
+  padding: 0.25rem;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.emoji-menu__cell:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+.emoji-menu__cell:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+}
+
+.emoji-menu__glyph {
+  user-select: none;
+  pointer-events: none;
+}

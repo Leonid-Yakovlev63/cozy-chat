@@ -67,7 +67,14 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 14%, transparent);
 }
 
-.send-message-form__row .ui-button {
+.send-message-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.send-message-form__actions .ui-button {
   flex-shrink: 0;
   align-self: center;
 }
