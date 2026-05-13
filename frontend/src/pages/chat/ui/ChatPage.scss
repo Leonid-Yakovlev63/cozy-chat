@@ -11,6 +11,8 @@
 }
 
 .chat-page__workspace {
+  position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 0;
   overflow: hidden;
