@@ -1,0 +1,29 @@
+.auth-card {
+  width: min(520px, 100%);
+  padding: clamp(1.25rem, 2.6vw, 1.75rem);
+  border-radius: 1.25rem;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  box-shadow: 0 24px 80px rgba(20, 12, 8, 0.12);
+}
+
+.auth-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.auth-card__title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.auth-card__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  font-size: 0.9375rem;
+}

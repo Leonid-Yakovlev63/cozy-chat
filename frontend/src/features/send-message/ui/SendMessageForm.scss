@@ -1,0 +1,29 @@
+.send-message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+}
+
+.send-message-form__row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.send-message-form__field {
+  flex: 1;
+  min-width: 0;
+}
+
+.send-message-form__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-danger);
+}
+
+.send-message-form--disabled {
+  opacity: 0.65;
+}

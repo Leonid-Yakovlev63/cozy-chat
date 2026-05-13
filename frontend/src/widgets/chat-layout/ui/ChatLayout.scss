@@ -1,0 +1,27 @@
+.chat-layout {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  overflow: hidden;
+}
+
+.chat-layout__sidebar {
+  min-height: 0;
+  overflow: auto;
+}
+
+.chat-layout__main {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 960px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
