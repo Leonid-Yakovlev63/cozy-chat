@@ -36,19 +36,20 @@ html[data-theme='dark'] {
 
 html[data-theme='coffee'] {
   color-scheme: light;
-  --color-bg: #f6f0ea;
-  --color-surface: #fffaf6;
-  --color-text: #1f1410;
-  --color-text-muted: rgba(31, 20, 16, 0.62);
-  --color-placeholder: rgba(31, 20, 16, 0.42);
-  --color-border: rgba(31, 20, 16, 0.12);
-  --color-accent: #d97757;
-  --color-accent-strong: #b4532a;
-  --color-on-accent: #fffaf6;
-  --color-warm: #f0c987;
-  --color-danger: #b42318;
-  --color-success: #166534;
-  --color-focus: #2f6feb;
+  /* Кофейня: зерно, крафт, эспрессо и карамель — без жёлтого «солнечного» */
+  --color-bg: #c4b3a2;
+  --color-surface: #efe6dc;
+  --color-text: #1f120c;
+  --color-text-muted: rgba(31, 18, 12, 0.66);
+  --color-placeholder: rgba(31, 18, 12, 0.42);
+  --color-border: rgba(56, 36, 26, 0.28);
+  --color-accent: #7a4f35;
+  --color-accent-strong: #4a2c1c;
+  --color-on-accent: #faf4ec;
+  --color-warm: #5c3d24;
+  --color-danger: #8f2c22;
+  --color-success: #2f4a32;
+  --color-focus: #6b4530;
 }
 
 html[data-theme='lunar'] {
