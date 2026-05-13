@@ -11,7 +11,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function colorSchemeFor(theme: ThemeId): 'light' | 'dark' {
-  return theme === 'light' || theme === 'coffee' || theme === 'sunny' ? 'light' : 'dark'
+  return theme === 'light' || theme === 'coffee' || theme === 'sunny' || theme === 'aero' ? 'light' : 'dark'
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
