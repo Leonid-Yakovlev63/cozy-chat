@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useRef, useState } from 'react'
 import { Button } from '@/shared/ui/button'
-import { TextField } from '@/shared/ui/text-field'
+import { TextAreaField } from '@/shared/ui/text-field'
 import { sendMessageRequest } from '@/entities/message'
 import { ApiError } from '@/shared/api/errors'
 import '@/features/send-message/ui/SendMessageForm.scss'
@@ -12,11 +12,38 @@ type SendMessageFormProps = {
 }
 
 export function SendMessageForm({ token, peerUsername, onSent }: SendMessageFormProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+  const contentRef = useRef<HTMLTextAreaElement>(null)
   const [content, setContent] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
   const disabled = !peerUsername.trim()
+
+  function onContentKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault()
+      const el = event.currentTarget
+      const start = el.selectionStart ?? 0
+      const end = el.selectionEnd ?? 0
+      const tab = '\t'
+      const next = content.slice(0, start) + tab + content.slice(end)
+      setContent(next)
+      const pos = start + tab.length
+      window.setTimeout(() => {
+        contentRef.current?.focus()
+        contentRef.current?.setSelectionRange(pos, pos)
+      }, 0)
+      return
+    }
+
+    if (event.key !== 'Enter') return
+    if (event.shiftKey) return
+    if (event.nativeEvent.isComposing) return
+    event.preventDefault()
+    if (disabled || pending || !content.trim()) return
+    formRef.current?.requestSubmit()
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -38,7 +65,7 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
   const rootClass = ['send-message-form', disabled ? 'send-message-form--disabled' : ''].filter(Boolean).join(' ')
 
   return (
-    <form className={rootClass} onSubmit={onSubmit}>
+    <form ref={formRef} className={rootClass} onSubmit={onSubmit}>
       {error ? (
         <p className="send-message-form__error" role="alert">
           {error}
@@ -46,13 +73,18 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
       ) : null}
       <div className="send-message-form__row">
         <div className="send-message-form__field">
-          <TextField
+          <TextAreaField
+            ref={contentRef}
+            className="send-message-form__text-field"
             name="content"
             label="Сообщение"
+            labelSrOnly
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Напишите сообщение…"
+            onKeyDown={onContentKeyDown}
+            placeholder="Сообщение…"
             autoComplete="off"
+            rows={1}
             required
           />
         </div>

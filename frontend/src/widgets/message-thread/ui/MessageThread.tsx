@@ -1,5 +1,6 @@
 import { SendMessageForm } from '@/features/send-message'
 import { Button } from '@/shared/ui/button'
+import { MessageRichText } from '@/shared/ui/message-rich-text/MessageRichText'
 import type { ChatMessage } from '@/entities/message'
 import '@/widgets/message-thread/ui/MessageThread.scss'
 
@@ -30,7 +31,7 @@ function MessageBubble({ message, selfUsername }: MessageBubbleProps) {
           {formatTime(message.createdAt)}
         </time>
       </div>
-      <p className="message-bubble__text">{message.content}</p>
+      <MessageRichText content={message.content} className="message-bubble__text" />
       <span className={statusClass} role="status">
         {message.isRead ? 'Прочитано' : 'Не прочитано'}
       </span>

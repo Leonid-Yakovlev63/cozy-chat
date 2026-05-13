@@ -155,6 +155,10 @@
   overflow-wrap: anywhere;
 }
 
+.message-bubble__text.message-rich-text {
+  white-space: normal;
+}
+
 .message-bubble__status {
   margin-top: 0.35rem;
   font-size: 0.6875rem;

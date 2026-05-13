@@ -1,0 +1,19 @@
+.message-rich-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.message-rich-text__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message-rich-text__text:not(:last-child) {
+  margin-bottom: 0.35rem;
+}
+
+.message-rich-text .code-block + .message-rich-text__text {
+  margin-top: 0.35rem;
+}
