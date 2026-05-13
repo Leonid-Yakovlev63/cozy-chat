@@ -6,10 +6,48 @@
     monospace;
 }
 
+/* Скроллбар: цвета от активной темы (переменные с html[data-theme]) */
+html {
+  --scrollbar-track: color-mix(in srgb, var(--color-surface) 78%, var(--color-bg));
+  --scrollbar-thumb: color-mix(in srgb, var(--color-text) 14%, var(--color-border));
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--scrollbar-thumb) 72%, var(--color-accent));
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border-color: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
 }
 
 html,
