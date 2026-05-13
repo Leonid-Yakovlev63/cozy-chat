@@ -12,6 +12,7 @@ type (
 	MessageService interface {
 		SendMessage(ctx context.Context, message domain.Message) error
 		ReadLatestMessagesFromUser(ctx context.Context, username, targetUser string) ([]domain.Message, error)
+		ListPeers(ctx context.Context, username string) ([]domain.Peer, error)
 	}
 	messageSerivce struct {
 		messageRepository repository.MessageRepository
@@ -65,4 +66,8 @@ func (s *messageSerivce) ReadLatestMessagesFromUser(ctx context.Context, usernam
 	}()
 
 	return foundMessages, nil
+}
+
+func (s *messageSerivce) ListPeers(ctx context.Context, username string) ([]domain.Peer, error) {
+	return s.messageRepository.ListPeers(ctx, username)
 }
