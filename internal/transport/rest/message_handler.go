@@ -16,6 +16,7 @@ type (
 		RegisterRoutes(mux *http.ServeMux)
 		SendMessage(w http.ResponseWriter, r *http.Request)
 		ReadLatestMessagesFromUser(w http.ResponseWriter, r *http.Request)
+		ListPeers(w http.ResponseWriter, r *http.Request)
 	}
 	messageHandler struct {
 		authService    service.AuthService
@@ -95,7 +96,29 @@ func (h *messageHandler) ReadLatestMessagesFromUser(w http.ResponseWriter, r *ht
 
 }
 
+func (h *messageHandler) ListPeers(w http.ResponseWriter, r *http.Request) {
+	username, ok := r.Context().Value(UserContextKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	peers, err := h.messageService.ListPeers(r.Context(), username)
+	if err != nil {
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+		return
+	}
+	if peers == nil {
+		peers = []domain.Peer{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(peers)
+}
+
 func (h *messageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/messages", AuthMiddleware(h.authService)(http.HandlerFunc(h.SendMessage)))
 	mux.Handle("GET /api/messages/{username}", AuthMiddleware(h.authService)(http.HandlerFunc(h.ReadLatestMessagesFromUser)))
+	mux.Handle("GET /api/peers", AuthMiddleware(h.authService)(http.HandlerFunc(h.ListPeers)))
 }

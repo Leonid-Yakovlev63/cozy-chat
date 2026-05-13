@@ -3,6 +3,7 @@ package mongorepository
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/domain"
 	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/repository"
@@ -75,6 +76,64 @@ func (r *messageRepository) FindLatestMessagesBetweenUsers(ctx context.Context, 
 
 	return messages, nil
 
+}
+
+type peerAggRow struct {
+	Username      string    `bson:"username"`
+	LastMessageAt time.Time `bson:"lastMessageAt"`
+}
+
+func (r *messageRepository) ListPeers(ctx context.Context, username string) ([]domain.Peer, error) {
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"$or": []bson.M{
+				{"fromUser": username},
+				{"toUser": username},
+			},
+		}}},
+		bson.D{{Key: "$addFields", Value: bson.M{
+			"peer": bson.M{
+				"$cond": bson.A{
+					bson.M{"$eq": bson.A{"$fromUser", username}},
+					"$toUser",
+					"$fromUser",
+				},
+			},
+		}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":           "$peer",
+			"lastMessageAt": bson.M{"$max": "$createdAt"},
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "lastMessageAt", Value: -1}}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":           0,
+			"username":      "$_id",
+			"lastMessageAt": 1,
+		}}},
+	}
+
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		slog.Error("Ошибка при агрегации списка собеседников", "error", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var rows []peerAggRow
+	if err = cursor.All(ctx, &rows); err != nil {
+		slog.Error("Ошибка при чтении результата агрегации peers", "error", err)
+		return nil, err
+	}
+
+	peers := make([]domain.Peer, 0, len(rows))
+	for _, row := range rows {
+		peers = append(peers, domain.Peer{
+			Username:      row.Username,
+			LastMessageAt: row.LastMessageAt,
+		})
+	}
+
+	return peers, nil
 }
 
 func (r *messageRepository) MarkMessageAsRead(ctx context.Context, ID string) error {
