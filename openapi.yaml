@@ -231,6 +231,42 @@ paths:
               example:
                 error: internal server error
 
+  /api/peers:
+    get:
+      tags: [Messages]
+      summary: List conversation peers for the authenticated user
+      description: Returns usernames you have at least one message with (in either direction), sorted by most recent activity.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of peers (may be empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Peer'
+              example:
+                - username: ivan
+                  lastMessageAt: '2026-05-13T12:00:00.000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal server error
+
 components:
   securitySchemes:
     bearerAuth:
@@ -297,3 +333,13 @@ components:
       properties:
         error:
           type: string
+    Peer:
+      type: object
+      required: [username, lastMessageAt]
+      properties:
+        username:
+          type: string
+          example: ivan
+        lastMessageAt:
+          type: string
+          format: date-time
