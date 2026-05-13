@@ -12,6 +12,17 @@ import '@/pages/chat/ui/ChatPage.scss'
 /** REST без push: опрос, чтобы у получателя появлялись новые сообщения без перезагрузки страницы. */
 const MESSAGES_POLL_INTERVAL_MS = 8_000
 
+function formatChatLoadError(raw: string): string {
+  const n = raw.trim().toLowerCase()
+  if (
+    (n.includes('yourself') || n.includes('с собой')) &&
+    (n.includes('cannot') || n.includes("can't") || n.includes('read') || n.includes('message'))
+  ) {
+    return 'Нельзя открыть чат с собой — выберите другого пользователя.'
+  }
+  return raw
+}
+
 export function ChatPage() {
   const { token, username } = useSession()
   const [peer, setPeer] = useState<string | null>(null)
@@ -41,7 +52,7 @@ export function ChatPage() {
     } catch (e) {
       if (!silent) {
         const message = e instanceof ApiError ? e.message : 'Не удалось загрузить сообщения.'
-        setError(message)
+        setError(formatChatLoadError(message))
         setMessages([])
       }
     } finally {
