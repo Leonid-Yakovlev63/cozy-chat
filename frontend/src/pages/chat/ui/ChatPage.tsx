@@ -7,7 +7,10 @@ import { PeerPanel } from '@/widgets/peer-panel'
 import { fetchMessagesWithUser, type ChatMessage } from '@/entities/message'
 import { useSession } from '@/entities/session'
 import { ApiError } from '@/shared/api/errors'
+import { useMediaQuery } from '@/shared/lib/useMediaQuery'
 import '@/pages/chat/ui/ChatPage.scss'
+
+const MOBILE_CHAT_LAYOUT = '(max-width: 960px)'
 
 /** REST без push: опрос, чтобы у получателя появлялись новые сообщения без перезагрузки страницы. */
 const MESSAGES_POLL_INTERVAL_MS = 8_000
@@ -25,6 +28,8 @@ function formatChatLoadError(raw: string): string {
 
 export function ChatPage() {
   const { token, username } = useSession()
+  const isMobileChatLayout = useMediaQuery(MOBILE_CHAT_LAYOUT)
+  const [mobilePeerDrawerOpen, setMobilePeerDrawerOpen] = useState(false)
   const [peer, setPeer] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
@@ -33,6 +38,24 @@ export function ChatPage() {
 
   const invalidatePeerList = useCallback(() => {
     setPeerListVersion((v) => v + 1)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobileChatLayout) setMobilePeerDrawerOpen(false)
+  }, [isMobileChatLayout])
+
+  useEffect(() => {
+    if (!mobilePeerDrawerOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobilePeerDrawerOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mobilePeerDrawerOpen])
+
+  const openPeer = useCallback((next: string) => {
+    setPeer(next)
+    setMobilePeerDrawerOpen(false)
   }, [])
 
   const loadPeerMessages = useCallback(async (opts?: { silent?: boolean }) => {
@@ -106,14 +129,18 @@ export function ChatPage() {
       <AppHeader username={username} />
       <div className="chat-page__workspace">
         <ChatLayout
+          mobileDrawer={isMobileChatLayout}
+          mobileDrawerOpen={mobilePeerDrawerOpen}
+          onMobileDrawerClose={() => setMobilePeerDrawerOpen(false)}
           sidebar={
             <PeerPanel
               token={token}
               selfUsername={username}
               activePeer={peer}
-              onOpenPeer={setPeer}
+              onOpenPeer={openPeer}
               peerListVersion={peerListVersion}
               onManualPeerOpened={invalidatePeerList}
+              onRequestClose={isMobileChatLayout ? () => setMobilePeerDrawerOpen(false) : undefined}
             />
           }
           main={
@@ -127,6 +154,8 @@ export function ChatPage() {
               onRefreshQuiet={() => void loadPeerMessages({ silent: true })}
               onRefreshFull={() => void loadPeerMessages({ silent: false })}
               onPeerListInvalidated={invalidatePeerList}
+              onOpenPeerList={isMobileChatLayout ? () => setMobilePeerDrawerOpen(true) : undefined}
+              peerListDrawerOpen={isMobileChatLayout ? mobilePeerDrawerOpen : undefined}
             />
           }
         />

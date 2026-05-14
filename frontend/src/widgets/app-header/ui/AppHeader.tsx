@@ -14,20 +14,20 @@ export function AppHeader({ username }: AppHeaderProps) {
         <h1 className="app-header__title">Cozy Chat</h1>
       </div>
       <div className="app-header__actions">
-        <NavLink
-          to="/profile"
-          className={({ isActive }) =>
-            ['app-header__nav-link', isActive ? 'app-header__nav-link--active' : ''].filter(Boolean).join(' ')
-          }
-        >
-          Профиль
-        </NavLink>
-        <ThemeSwitch />
-        <div className="app-header__user">
-          <span className="app-header__user-label">Вы вошли как</span>
-          <span className="app-header__user-name">{username ?? '…'}</span>
+        <div className="app-header__actions-start">
+          <ThemeSwitch />
         </div>
-        <LogoutControl />
+        <div className="app-header__actions-end">
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
+            }
+          >
+            <span className="app-header__profile-name">{username ?? '…'}</span>
+          </NavLink>
+          <LogoutControl />
+        </div>
       </div>
     </header>
   )

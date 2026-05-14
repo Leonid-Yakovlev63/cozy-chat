@@ -8,6 +8,8 @@
   min-height: 0;
   overflow: hidden;
   background: var(--color-bg);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .chat-page__workspace {

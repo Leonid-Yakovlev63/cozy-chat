@@ -35,6 +35,8 @@ type PeerPanelProps = {
   onOpenPeer: (username: string) => void
   peerListVersion?: number
   onManualPeerOpened?: () => void
+  /** Выездная панель: кнопка закрытия в шапке */
+  onRequestClose?: () => void
 }
 
 export function PeerPanel({
@@ -44,6 +46,7 @@ export function PeerPanel({
   onOpenPeer,
   peerListVersion = 0,
   onManualPeerOpened,
+  onRequestClose,
 }: PeerPanelProps) {
   const [peers, setPeers] = useState<ChatPeer[]>([])
   const [listBusy, setListBusy] = useState(true)
@@ -87,6 +90,21 @@ export function PeerPanel({
   return (
     <aside className="peer-panel">
       <div className="peer-panel__header">
+        {onRequestClose ? (
+          <button
+            type="button"
+            className="peer-panel__close"
+            aria-label="Закрыть список чатов"
+            onClick={onRequestClose}
+          >
+            <svg className="peer-panel__close-icon" viewBox="0 0 24 24" width={20} height={20} aria-hidden>
+              <path
+                fill="currentColor"
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              />
+            </svg>
+          </button>
+        ) : null}
         <h2 className="peer-panel__title">Чаты</h2>
         <Button type="button" variant="ghost" className="peer-panel__refresh" onClick={() => void loadPeers()} disabled={listBusy}>
           Обновить

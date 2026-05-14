@@ -62,13 +62,17 @@
 
 .theme-switch__list {
   position: absolute;
-  z-index: 50;
+  z-index: 60;
   top: calc(100% + 0.35rem);
   right: 0;
   left: auto;
   min-width: 100%;
   width: max-content;
-  max-width: min(16rem, 92vw);
+  max-width: min(16rem, calc(100vw - 1.5rem));
+  max-height: min(50dvh, 17.5rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -76,6 +80,7 @@
   border-radius: 0.75rem;
   background: var(--color-surface);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  -webkit-overflow-scrolling: touch;
 }
 
 .theme-switch__item {
@@ -120,6 +125,12 @@
 
 @media (max-width: 720px) {
   .theme-switch__trigger {
-    max-width: 100%;
+    max-width: min(10rem, 42vw);
+    min-width: 0;
+  }
+
+  .theme-switch__list {
+    max-height: min(45dvh, 15rem);
+    max-width: min(16rem, calc(100vw - 2rem));
   }
 }

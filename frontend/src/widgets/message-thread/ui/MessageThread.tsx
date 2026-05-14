@@ -49,6 +49,9 @@ type MessageThreadProps = {
   onRefreshQuiet: () => void
   onRefreshFull: () => void
   onPeerListInvalidated?: () => void
+  /** Узкий экран: открыть выездной список чатов слева */
+  onOpenPeerList?: () => void
+  peerListDrawerOpen?: boolean
 }
 
 export function MessageThread({
@@ -61,12 +64,30 @@ export function MessageThread({
   onRefreshQuiet,
   onRefreshFull,
   onPeerListInvalidated,
+  onOpenPeerList,
+  peerListDrawerOpen,
 }: MessageThreadProps) {
   const sorted = [...messages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 
   return (
     <section className="message-thread">
       <div className="message-thread__toolbar">
+        <div className="message-thread__toolbar-start">
+          {onOpenPeerList ? (
+            <button
+              type="button"
+              className="message-thread__peer-list-toggle"
+              aria-label="Открыть список чатов"
+              aria-expanded={Boolean(peerListDrawerOpen)}
+              aria-controls="chat-peer-drawer"
+              onClick={onOpenPeerList}
+            >
+              <svg className="message-thread__peer-list-icon" viewBox="0 0 24 24" width={22} height={22} aria-hidden>
+                <path fill="currentColor" d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
         <div className="message-thread__toolbar-main">
           <p className="message-thread__peer">{peerUsername ? `Диалог с ${peerUsername}` : 'Диалог не выбран'}</p>
         </div>
@@ -87,7 +108,11 @@ export function MessageThread({
 
       <div className="message-thread__body">
         {!peerUsername ? (
-          <p className="message-thread__empty">Выберите username слева и нажмите «Открыть чат», чтобы загрузить историю.</p>
+          <p className="message-thread__empty">
+            {onOpenPeerList
+              ? 'Нажмите кнопку меню вверху слева, чтобы открыть список чатов и выбрать диалог.'
+              : 'Выберите username слева и нажмите «Открыть чат», чтобы загрузить историю.'}
+          </p>
         ) : loading ? (
           <p className="message-thread__loading">Загрузка…</p>
         ) : sorted.length === 0 ? (
