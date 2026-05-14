@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Cozy Chat Backend API
+  title: Cozy Chat API
   version: 1.0.0
   description: REST API for authentication and messaging in Cozy Chat.
 servers:

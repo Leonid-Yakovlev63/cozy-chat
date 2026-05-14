@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/domain"
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/infrastructure/validator"
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/repository"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/domain"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/validator"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 

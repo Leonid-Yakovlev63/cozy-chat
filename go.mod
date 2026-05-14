@@ -1,4 +1,4 @@
-module github.com/Leonid-Yakovlev63/cozy-chat-backend
+module github.com/Leonid-Yakovlev63/cozy-chat
 
 go 1.25.6
 

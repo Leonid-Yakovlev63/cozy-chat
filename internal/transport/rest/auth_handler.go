@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/dto"
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/infrastructure/validator"
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/service"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/dto"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/validator"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
 )
 
 type (

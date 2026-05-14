@@ -3,7 +3,7 @@ package mongorepository
 import (
 	"time"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/domain"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/service"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
 )
 
 type (

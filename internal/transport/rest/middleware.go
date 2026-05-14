@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/service"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
 )
 
 type contextKey string

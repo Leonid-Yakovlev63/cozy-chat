@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/domain"
-	"github.com/Leonid-Yakovlev63/cozy-chat-backend/internal/repository"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/domain"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/repository"
 )
 
 type (
