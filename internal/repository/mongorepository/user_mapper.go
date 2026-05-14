@@ -11,6 +11,7 @@ type userDB struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	Username  string             `bson:"username" validate:"required,min=3"`
 	Password  string             `bson:"password" validate:"required,min=8"`
+	Status    string             `bson:"status"`
 	CreatedAt time.Time          `bson:"createdAt"`
 	UpdatedAt time.Time          `bson:"updatedAt"`
 }
@@ -20,6 +21,7 @@ func toUserDB(u *domain.User) *userDB {
 	return &userDB{
 		Username:  u.Username,
 		Password:  u.Password,
+		Status:    u.Status,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}
@@ -30,6 +32,7 @@ func toDomainUser(u *userDB) *domain.User {
 		ID:        u.ID.Hex(),
 		Username:  u.Username,
 		Password:  u.Password,
+		Status:    u.Status,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}

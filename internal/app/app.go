@@ -92,6 +92,9 @@ func Run() {
 	messageHandler := rest.NewMessageHandler(messageService, authService, appValidator)
 	messageHandler.RegisterRoutes(mux)
 
+	userHandler := rest.NewUserHandler(userService, authService, appValidator)
+	userHandler.RegisterRoutes(mux)
+
 	// Swagger
 	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "openapi.yaml")

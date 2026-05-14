@@ -40,10 +40,27 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 }
 
 func (r *userRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
-	var user domain.User
-	err := r.collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	var row userDB
+	err := r.collection.FindOne(ctx, bson.M{"username": username}).Decode(&row)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, nil
 	}
-	return &user, err
+	if err != nil {
+		return nil, err
+	}
+	return toDomainUser(&row), nil
+}
+
+func (r *userRepository) ChangeStatus(ctx context.Context, username, status string) error {
+	now := time.Now()
+	_, err := r.collection.UpdateOne(ctx, bson.M{"username": username}, bson.M{
+		"$set": bson.M{
+			"status":    status,
+			"updatedAt": now,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

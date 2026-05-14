@@ -9,6 +9,7 @@ tags:
   - name: Auth
   - name: Data
   - name: Messages
+  - name: Users
 paths:
   /api/register:
     post:
@@ -267,6 +268,103 @@ paths:
               example:
                 error: internal server error
 
+  /api/users/status:
+    patch:
+      tags: [Users]
+      summary: Update current user's status text
+      description: Sets the profile status for the user identified by the JWT subject (username).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeStatusRequest'
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: status updated successfully
+        '400':
+          description: Invalid body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  value:
+                    error: invalid request
+                validationFailed:
+                  value:
+                    error: "validation failed: status must be 1–500 characters"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: user not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      description: Returns the authenticated user's profile (from JWT). Password is never included.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                id: 507f1f77bcf86cd799439011
+                username: leonid
+                status: Working from home
+                createdAt: '2026-05-01T10:00:00.000Z'
+                updatedAt: '2026-05-14T12:00:00.000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: user not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -303,6 +401,34 @@ components:
         token:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    ChangeStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: Working from home today
+    UserProfile:
+      type: object
+      required: [id, username, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        username:
+          type: string
+          example: leonid
+        status:
+          type: string
+          example: Working from home
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     SendMessageRequest:
       type: object
       required: [toUser, content]

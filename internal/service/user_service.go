@@ -13,6 +13,7 @@ type (
 	UserService interface {
 		Register(ctx context.Context, username, password string) error
 		GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
+		ChangeStatus(ctx context.Context, username, status string) error
 	}
 	userService struct {
 		repo      repository.UserRepository
@@ -52,4 +53,15 @@ func (s *userService) Register(ctx context.Context, username, password string) e
 
 func (s *userService) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
 	return s.repo.FindByUsername(ctx, username)
+}
+
+func (s *userService) ChangeStatus(ctx context.Context, username, status string) error {
+	u, err := s.repo.FindByUsername(ctx, username)
+	if err != nil {
+		return err
+	}
+	if u == nil {
+		return ErrUserNotFound
+	}
+	return s.repo.ChangeStatus(ctx, username, status)
 }
