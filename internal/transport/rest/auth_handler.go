@@ -57,6 +57,8 @@ func (h *authHandler) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"message": "user registered successfully"})
 	case errors.Is(err, service.ErrUserAlreadyExists):
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusConflict)
+	case errors.Is(err, service.ErrInvalidStruct):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}
