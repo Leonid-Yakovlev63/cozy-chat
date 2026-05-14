@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ChatPage } from '@/pages/chat'
 import { LoginPage } from '@/pages/login'
+import { ProfilePage } from '@/pages/profile'
 import { RegisterPage } from '@/pages/register'
 import { RequireAuth } from '@/app/providers/RequireAuth'
 
@@ -13,6 +14,7 @@ export function AppRouter() {
 
         <Route element={<RequireAuth />}>
           <Route path="/" element={<ChatPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

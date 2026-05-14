@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import { LogoutControl } from '@/features/logout'
 import { ThemeSwitch } from '@/features/theme-switch'
 import '@/widgets/app-header/ui/AppHeader.scss'
@@ -13,6 +14,14 @@ export function AppHeader({ username }: AppHeaderProps) {
         <h1 className="app-header__title">Cozy Chat</h1>
       </div>
       <div className="app-header__actions">
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            ['app-header__nav-link', isActive ? 'app-header__nav-link--active' : ''].filter(Boolean).join(' ')
+          }
+        >
+          Профиль
+        </NavLink>
         <ThemeSwitch />
         <div className="app-header__user">
           <span className="app-header__user-label">Вы вошли как</span>

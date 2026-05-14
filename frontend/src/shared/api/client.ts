@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@/shared/config'
 import { ApiError } from '@/shared/api/errors'
 
-type HttpMethod = 'GET' | 'POST'
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 
 async function readErrorMessage(response: Response): Promise<string> {
   const text = await response.text()

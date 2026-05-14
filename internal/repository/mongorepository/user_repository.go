@@ -64,3 +64,16 @@ func (r *userRepository) ChangeStatus(ctx context.Context, username, status stri
 	}
 	return nil
 }
+
+func (r *userRepository) DeleteStatus(ctx context.Context, username string) error {
+	_, err := r.collection.UpdateOne(ctx, bson.M{"username": username}, bson.M{
+		"$set": bson.M{
+			"status":    "",
+			"updatedAt": time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}

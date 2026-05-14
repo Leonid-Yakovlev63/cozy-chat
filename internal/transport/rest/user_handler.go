@@ -14,6 +14,7 @@ type (
 	UserHandler interface {
 		RegisterRoutes(mux *http.ServeMux)
 		ChangeStatus(w http.ResponseWriter, r *http.Request)
+		DeleteStatus(w http.ResponseWriter, r *http.Request)
 		GetMyProfile(w http.ResponseWriter, r *http.Request)
 	}
 	userHandler struct {
@@ -29,6 +30,7 @@ func NewUserHandler(userService service.UserService, authService service.AuthSer
 
 func (h *userHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("PATCH /api/users/status", AuthMiddleware(h.authService)(http.HandlerFunc(h.ChangeStatus)))
+	mux.Handle("DELETE /api/users/status", AuthMiddleware(h.authService)(http.HandlerFunc(h.DeleteStatus)))
 	mux.Handle("GET /api/users/me", AuthMiddleware(h.authService)(http.HandlerFunc(h.GetMyProfile)))
 }
 
@@ -80,5 +82,24 @@ func (h *userHandler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(user)
+	}
+}
+
+func (h *userHandler) DeleteStatus(w http.ResponseWriter, r *http.Request) {
+	username, ok := r.Context().Value(UserContextKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	err := h.userService.DeleteStatus(r.Context(), username)
+	switch {
+	case err == nil:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "status deleted successfully"})
+	case errors.Is(err, service.ErrUserNotFound):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusNotFound)
+	default:
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}
 }
