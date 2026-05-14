@@ -45,7 +45,7 @@
 
 /* Позиция и размеры задаются в JS (position: fixed), чтобы не обрезалось overflow у предков */
 .emoji-menu__popover {
-  z-index: 200;
+  z-index: 9999;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
