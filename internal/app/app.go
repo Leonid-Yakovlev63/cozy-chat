@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/crypto"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/validator"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/repository/mongorepository"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
@@ -29,6 +30,16 @@ func Run() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET не задан в .env")
+	}
+
+	messageEncryptionKey := os.Getenv("MESSAGE_ENCRYPTION_KEY")
+	if messageEncryptionKey == "" {
+		log.Fatal("MESSAGE_ENCRYPTION_KEY не задан в .env")
+	}
+
+	messageEncryptor, err := crypto.NewMessageEncryptorFromSecret(messageEncryptionKey)
+	if err != nil {
+		log.Fatalf("Ошибка инициализации шифрования сообщений: %v", err)
 	}
 
 	mongoDbHost := os.Getenv("MONGO_DB_HOST")
@@ -75,7 +86,7 @@ func Run() {
 	appValidator := validator.NewPlaygroundValidator()
 
 	userRepository := mongorepository.NewUserRepository(db)
-	messageRepository := mongorepository.NewMessageRepository(db)
+	messageRepository := mongorepository.NewMessageRepository(db, messageEncryptor)
 
 	userService := service.NewUserService(userRepository, appValidator)
 	authService := service.NewAuthService(userService, jwtSecret, 24)

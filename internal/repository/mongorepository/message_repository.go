@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/domain"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/crypto"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,20 +16,27 @@ import (
 
 type messageRepository struct {
 	collection *mongo.Collection
+	encryptor  crypto.MessageEncryptor
 }
 
-func NewMessageRepository(db *mongo.Database) repository.MessageRepository {
+func NewMessageRepository(db *mongo.Database, encryptor crypto.MessageEncryptor) repository.MessageRepository {
 	return &messageRepository{
 		collection: db.Collection("messages"),
+		encryptor:  encryptor,
 	}
 }
 
 func (r *messageRepository) Create(ctx context.Context, message domain.Message) error {
 
-	var messageDB messageDB = *toMessageDB(&message)
+	messageDB, err := toMessageDB(&message, r.encryptor)
+	if err != nil {
+		slog.Error("Ошибка при шифровании content сообщения", "error", err)
+		return err
+	}
+
 	messageDB.ID = primitive.NewObjectID()
 
-	_, err := r.collection.InsertOne(ctx, messageDB)
+	_, err = r.collection.InsertOne(ctx, messageDB)
 	if err != nil {
 		slog.Error("Ошибка при добавлении сообщения", "error", err)
 		return err
@@ -71,7 +79,13 @@ func (r *messageRepository) FindLatestMessagesBetweenUsers(ctx context.Context, 
 	var messages []domain.Message
 
 	for _, message := range messagesDB {
-		messages = append(messages, *toDomainMessage(&message))
+		domainMessage, err := toDomainMessage(&message, r.encryptor)
+		if err != nil {
+			slog.Error("Ошибка при расшифровке content сообщения", "error", err, "messageID", message.ID.Hex())
+			return nil, err
+		}
+
+		messages = append(messages, *domainMessage)
 	}
 
 	return messages, nil
