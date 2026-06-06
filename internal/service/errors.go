@@ -14,6 +14,7 @@ var (
 	ErrUserNotVerified          = errors.New("пользователь не верифицирован")
 	ErrUserBlocked              = errors.New("пользователь заблокирован")
 	ErrAccessDenied             = errors.New("access denied")
+	ErrNewsNotFound             = errors.New("news not found")
 	// ???
 	ErrReadSomeoneElsesCorrespondence = errors.New("reading someone else's correspondence")
 )

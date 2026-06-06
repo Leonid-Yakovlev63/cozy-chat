@@ -1,5 +1,4 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/widgets/app-header'
 import { Button } from '@/shared/ui/button'
 import { TextAreaField } from '@/shared/ui/text-field'
@@ -36,7 +35,6 @@ function formatJoined(iso: string): string {
 }
 
 export function ProfilePage() {
-  const navigate = useNavigate()
   const { token, username } = useSession()
   const [profile, setProfile] = useState<CurrentUser | null>(null)
   const [statusDraft, setStatusDraft] = useState('')
@@ -216,12 +214,6 @@ export function ProfilePage() {
                     </div>
                   )}
                 </section>
-
-                <footer className="profile-page__footer">
-                  <Button type="button" variant="ghost" onClick={() => navigate('/')}>
-                    ← К чату
-                  </Button>
-                </footer>
               </>
             ) : (
               <p className="profile-page__error profile-page__error--block" role="alert">

@@ -17,3 +17,10 @@
 .message-rich-text .code-block + .message-rich-text__text {
   margin-top: 0.35rem;
 }
+
+p.message-rich-text__lone-emoji {
+  font-size: clamp(2.25rem, 9vmin, 3.35rem);
+  line-height: 1.12;
+  text-align: center;
+  padding-block: 0.5rem;
+}

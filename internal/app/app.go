@@ -87,10 +87,12 @@ func Run() {
 
 	userRepository := mongorepository.NewUserRepository(db)
 	messageRepository := mongorepository.NewMessageRepository(db, messageEncryptor)
+	newsRepository := mongorepository.NewNewsRepository(db)
 
 	userService := service.NewUserService(userRepository, appValidator)
 	authService := service.NewAuthService(userService, jwtSecret, 24)
 	messageService := service.NewMessageService(messageRepository, userRepository)
+	newsService := service.NewNewsService(newsRepository, userService, appValidator)
 
 	mux := http.NewServeMux()
 
@@ -108,6 +110,9 @@ func Run() {
 
 	adminHandler := rest.NewAdminHandler(userService, authService)
 	adminHandler.RegisterRoutes(mux)
+
+	newsHandler := rest.NewNewsHandler(newsService, userService, authService, appValidator)
+	newsHandler.RegisterRoutes(mux)
 
 	// Swagger
 	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {

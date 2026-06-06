@@ -16,7 +16,7 @@ export function MessageRichText({ content, className }: MessageRichTextProps) {
     const only = segments[0]
     const text = only?.type === 'text' ? only.value : content
     const loneEmoji = isSingleEmojiMessage(text)
-    const textClass = [className, loneEmoji ? 'message-bubble__text--lone-emoji' : ''].filter(Boolean).join(' ')
+    const textClass = [className, loneEmoji ? 'message-rich-text__lone-emoji' : ''].filter(Boolean).join(' ')
     return <p className={textClass}>{text}</p>
   }
 

@@ -1,1 +1,1 @@
-export { AdminPage } from '@/pages/admin/ui/AdminPage'
+export { AdminLayout } from '@/pages/admin/ui/AdminLayout'

@@ -17,6 +17,13 @@ type (
 		DeleteStatus(ctx context.Context, username string) error
 	}
 
+	NewsRepository interface {
+		Create(ctx context.Context, news *domain.News) error
+		FindAll(ctx context.Context) ([]domain.News, error)
+		FindByID(ctx context.Context, id string) (*domain.News, error)
+		Delete(ctx context.Context, id string) error
+	}
+
 	MessageRepository interface {
 		Create(ctx context.Context, message domain.Message) error
 		FindLatestMessagesBetweenUsers(

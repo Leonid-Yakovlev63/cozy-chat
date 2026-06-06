@@ -1,0 +1,108 @@
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.admin-shell__body {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  flex-shrink: 0;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 28%, var(--color-surface));
+  overflow: auto;
+}
+
+.admin-sidebar__eyebrow {
+  margin: 0 0 1rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.admin-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-sidebar__link {
+  display: block;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.65rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-sidebar__link:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.admin-sidebar__link--active {
+  color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.admin-shell__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-shell__muted,
+.admin-shell__error {
+  margin: 0;
+  padding: 1.5rem;
+}
+
+.admin-shell__muted {
+  color: var(--color-text-muted);
+}
+
+.admin-shell__error {
+  color: var(--color-danger, #b42318);
+}
+
+@media (max-width: 720px) {
+  .admin-shell__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .admin-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.75rem 1rem;
+  }
+
+  .admin-sidebar__list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { LogoutControl } from '@/features/logout'
 import { ThemeSwitch } from '@/features/theme-switch'
 import { useSession } from '@/entities/session'
@@ -12,10 +12,7 @@ type AppHeaderProps = {
 
 export function AppHeader({ username }: AppHeaderProps) {
   const { token } = useSession()
-  const { pathname } = useLocation()
   const [isAdmin, setIsAdmin] = useState(false)
-  const onAdminPage = pathname === '/admin'
-
   useEffect(() => {
     if (!token) {
       setIsAdmin(false)
@@ -44,11 +41,23 @@ export function AppHeader({ username }: AppHeaderProps) {
           <ThemeSwitch />
         </div>
         <div className="app-header__actions-end">
-          {onAdminPage ? (
-            <NavLink to="/" className="app-header__profile-link">
-              Чат
-            </NavLink>
-          ) : null}
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
+            }
+          >
+            Чат
+          </NavLink>
+          <NavLink
+            to="/news"
+            className={({ isActive }) =>
+              ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
+            }
+          >
+            Новости
+          </NavLink>
           {isAdmin ? (
             <NavLink
               to="/admin"
@@ -56,7 +65,7 @@ export function AppHeader({ username }: AppHeaderProps) {
                 ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
               }
             >
-              Модерация
+              Администрирование
             </NavLink>
           ) : null}
           <NavLink
