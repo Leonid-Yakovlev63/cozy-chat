@@ -21,7 +21,7 @@ export function RegisterForm() {
     setPending(true)
     try {
       await register(username, password)
-      setSuccess('Аккаунт создан. Теперь можно войти.')
+      setSuccess('Аккаунт создан. Пожалуйста, дождитесь подтверждения администратором.')
     } catch (e) {
       const message = e instanceof ApiError ? e.message : 'Не удалось зарегистрироваться.'
       setError(message)
