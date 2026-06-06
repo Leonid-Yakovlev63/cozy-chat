@@ -13,6 +13,9 @@ type (
 	UserService interface {
 		Register(ctx context.Context, username, password string) error
 		GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
+		ListUnverifiedUsers(ctx context.Context, requesterUsername string) ([]domain.User, error)
+		VerifyUser(ctx context.Context, requesterUsername, targetUsername string) error
+		BlockUser(ctx context.Context, requesterUsername, targetUsername string) error
 		ChangeStatus(ctx context.Context, username, status string) error
 		DeleteStatus(ctx context.Context, username string) error
 	}
@@ -54,6 +57,61 @@ func (s *userService) Register(ctx context.Context, username, password string) e
 
 func (s *userService) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
 	return s.repo.FindByUsername(ctx, username)
+}
+
+func (s *userService) ListUnverifiedUsers(ctx context.Context, requesterUsername string) ([]domain.User, error) {
+	if err := s.requireAdmin(ctx, requesterUsername); err != nil {
+		return nil, err
+	}
+	return s.repo.FindUnverified(ctx)
+}
+
+func (s *userService) VerifyUser(ctx context.Context, requesterUsername, targetUsername string) error {
+	if err := s.requireAdmin(ctx, requesterUsername); err != nil {
+		return err
+	}
+	u, err := s.repo.FindByUsername(ctx, targetUsername)
+	if err != nil {
+		return err
+	}
+	if u == nil {
+		return ErrUserNotFound
+	}
+	if u.Verified {
+		return nil
+	}
+	return s.repo.SetVerified(ctx, targetUsername, true)
+}
+
+func (s *userService) BlockUser(ctx context.Context, requesterUsername, targetUsername string) error {
+	if err := s.requireAdmin(ctx, requesterUsername); err != nil {
+		return err
+	}
+	u, err := s.repo.FindByUsername(ctx, targetUsername)
+	if err != nil {
+		return err
+	}
+	if u == nil {
+		return ErrUserNotFound
+	}
+	if u.Blocked {
+		return nil
+	}
+	if u.Verified {
+		return ErrAccessDenied
+	}
+	return s.repo.SetBlocked(ctx, targetUsername, true)
+}
+
+func (s *userService) requireAdmin(ctx context.Context, username string) error {
+	u, err := s.repo.FindByUsername(ctx, username)
+	if err != nil {
+		return err
+	}
+	if u == nil || u.Role != domain.RoleAdmin {
+		return ErrAccessDenied
+	}
+	return nil
 }
 
 func (s *userService) ChangeStatus(ctx context.Context, username, status string) error {

@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AdminPage } from '@/pages/admin'
 import { ChatPage } from '@/pages/chat'
 import { LoginPage } from '@/pages/login'
 import { ProfilePage } from '@/pages/profile'
@@ -15,6 +16,7 @@ export function AppRouter() {
         <Route element={<RequireAuth />}>
           <Route path="/" element={<ChatPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

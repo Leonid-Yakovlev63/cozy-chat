@@ -12,6 +12,8 @@ var (
 	ErrFromUserEqualsToUser     = errors.New("you cannot send a message to yourself")
 	ErrReadMessagesFromYourself = errors.New("you cannot read a messages from yourself")
 	ErrUserNotVerified          = errors.New("пользователь не верифицирован")
+	ErrUserBlocked              = errors.New("пользователь заблокирован")
+	ErrAccessDenied             = errors.New("access denied")
 	// ???
 	ErrReadSomeoneElsesCorrespondence = errors.New("reading someone else's correspondence")
 )

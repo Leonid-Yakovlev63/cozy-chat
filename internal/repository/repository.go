@@ -10,6 +10,9 @@ type (
 	UserRepository interface {
 		Create(ctx context.Context, user *domain.User) error
 		FindByUsername(ctx context.Context, username string) (*domain.User, error)
+		FindUnverified(ctx context.Context) ([]domain.User, error)
+		SetVerified(ctx context.Context, username string, verified bool) error
+		SetBlocked(ctx context.Context, username string, blocked bool) error
 		ChangeStatus(ctx context.Context, username, status string) error
 		DeleteStatus(ctx context.Context, username string) error
 	}
