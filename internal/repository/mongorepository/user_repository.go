@@ -28,6 +28,8 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 	var userToCreate userDB = *toUserDB(user)
 
 	userToCreate.ID = primitive.NewObjectID()
+
+	userToCreate.Verified = false
 	userToCreate.CreatedAt = time.Now()
 	userToCreate.UpdatedAt = time.Now()
 

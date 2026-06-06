@@ -38,6 +38,9 @@ func (s *authService) Login(ctx context.Context, username, password string) (str
 	if user == nil {
 		return "", ErrUserNotFound
 	}
+	if !user.Verified {
+		return "", ErrUserNotVerified
+	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return "", ErrInvalidPassword

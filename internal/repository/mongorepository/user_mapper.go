@@ -12,6 +12,7 @@ type userDB struct {
 	Username  string             `bson:"username" validate:"required,min=3"`
 	Password  string             `bson:"password" validate:"required,min=8"`
 	Status    string             `bson:"status"`
+	Verified  bool               `bson:"verified"`
 	CreatedAt time.Time          `bson:"createdAt"`
 	UpdatedAt time.Time          `bson:"updatedAt"`
 }
@@ -22,6 +23,7 @@ func toUserDB(u *domain.User) *userDB {
 		Username:  u.Username,
 		Password:  u.Password,
 		Status:    u.Status,
+		Verified:  u.Verified,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}
@@ -33,6 +35,7 @@ func toDomainUser(u *userDB) *domain.User {
 		Username:  u.Username,
 		Password:  u.Password,
 		Status:    u.Status,
+		Verified:  u.Verified,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}

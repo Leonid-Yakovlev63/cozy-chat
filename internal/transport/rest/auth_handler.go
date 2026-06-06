@@ -81,6 +81,8 @@ func (h *authHandler) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"token": token})
 	case errors.Is(err, service.ErrUserNotFound), errors.Is(err, service.ErrInvalidPassword):
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusUnauthorized)
+	case errors.Is(err, service.ErrUserNotVerified):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusForbidden)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}
