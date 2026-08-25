@@ -2,31 +2,37 @@ package service
 
 import (
 	"context"
-	"errors"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/crypto"
+	jwtpkg "github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/jwt"
 )
+
+type TokenClaims struct {
+	Subject string
+}
 
 type (
 	AuthService interface {
 		Login(ctx context.Context, username, password string) (string, error)
-		ValidateToken(tokenString string) (*jwt.RegisteredClaims, error)
+		ValidateToken(tokenString string) (*TokenClaims, error)
 	}
 
 	authService struct {
-		userService UserService
-		secret      []byte
-		expiration  time.Duration
+		userService    UserService
+		tokenProvider  jwtpkg.TokenProvider
+		passwordHasher crypto.PasswordHasher
 	}
 )
 
-func NewAuthService(userService UserService, secret string, expirationHours int) AuthService {
+func NewAuthService(
+	userService UserService,
+	tokenProvider jwtpkg.TokenProvider,
+	passwordHasher crypto.PasswordHasher,
+) AuthService {
 	return &authService{
-		userService: userService,
-		secret:      []byte(secret),
-		expiration:  time.Duration(expirationHours) * time.Hour,
+		userService:    userService,
+		tokenProvider:  tokenProvider,
+		passwordHasher: passwordHasher,
 	}
 }
 
@@ -45,36 +51,18 @@ func (s *authService) Login(ctx context.Context, username, password string) (str
 		return "", ErrUserNotVerified
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err := s.passwordHasher.Compare(user.Password, password); err != nil {
 		return "", ErrInvalidPassword
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Subject: user.Username,
-
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.expiration)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-	})
-
-	return token.SignedString(s.secret)
+	return s.tokenProvider.Generate(user.Username)
 }
 
-func (s *authService) ValidateToken(tokenString string) (*jwt.RegisteredClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
-		}
-		return s.secret, nil
-	})
-
+func (s *authService) ValidateToken(tokenString string) (*TokenClaims, error) {
+	claims, err := s.tokenProvider.Validate(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	return claims, nil
+	return &TokenClaims{Subject: claims.Subject}, nil
 }

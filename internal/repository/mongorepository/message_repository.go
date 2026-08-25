@@ -68,6 +68,7 @@ func (r *messageRepository) FindLatestMessagesBetweenUsers(ctx context.Context, 
 		slog.Error("Ошибка при поиске сообщений между собеседниками", "error", err)
 		return nil, err
 	}
+	defer cursor.Close(ctx)
 
 	var messagesDB []messageDB
 
@@ -90,6 +91,58 @@ func (r *messageRepository) FindLatestMessagesBetweenUsers(ctx context.Context, 
 
 	return messages, nil
 
+}
+
+func (r *messageRepository) FindMessagesBetweenUsers(
+	ctx context.Context,
+	firstUser, secondUser string,
+	limit, offset int64,
+) ([]domain.Message, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{
+				"fromUser": firstUser,
+				"toUser":   secondUser,
+			},
+			{
+				"fromUser": secondUser,
+				"toUser":   firstUser,
+			},
+		},
+	}
+
+	findOptions := options.Find().
+		SetLimit(limit).
+		SetSkip(offset).
+		SetSort(bson.D{{Key: "createdAt", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		slog.Error("Ошибка при поиске сообщений между собеседниками", "error", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var messagesDB []messageDB
+
+	if err = cursor.All(ctx, &messagesDB); err != nil {
+		slog.Error("Ошибка при чтении сообщений из MongoDB", "error", err)
+		return nil, err
+	}
+
+	messages := make([]domain.Message, 0, len(messagesDB))
+
+	for _, message := range messagesDB {
+		domainMessage, err := toDomainMessage(&message, r.encryptor)
+		if err != nil {
+			slog.Error("Ошибка при расшифровке content сообщения", "error", err, "messageID", message.ID.Hex())
+			return nil, err
+		}
+
+		messages = append(messages, *domainMessage)
+	}
+
+	return messages, nil
 }
 
 type peerAggRow struct {
@@ -196,4 +249,14 @@ func (r *messageRepository) MarkMessagesAsRead(ctx context.Context, username, ta
 	}
 
 	return nil
+}
+
+func (r *messageRepository) DeleteByUsername(ctx context.Context, username string) error {
+	_, err := r.collection.DeleteMany(ctx, bson.M{
+		"$or": []bson.M{
+			{"fromUser": username},
+			{"toUser": username},
+		},
+	})
+	return err
 }

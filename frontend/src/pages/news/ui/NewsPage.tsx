@@ -44,7 +44,7 @@ export function NewsPage() {
       <main className="news-page__main">
         <header className="news-page__head">
           <h1 className="news-page__title">Новости</h1>
-          <p className="news-page__lead">Объявления и обновления от администрации Cozy Chat.</p>
+          <p className="news-page__lead">Новости сайта</p>
         </header>
 
         {loading ? (
@@ -64,7 +64,7 @@ export function NewsPage() {
                   <p className="news-page__item-meta">
                     {item.authorUsername} · {formatDate(item.createdAt)}
                   </p>
-                  <MessageRichText content={item.content} className="news-page__item-content" />
+                  <MessageRichText content={item.content} className="news-page__item-content" imageSize="article" />
                 </article>
               </li>
             ))}

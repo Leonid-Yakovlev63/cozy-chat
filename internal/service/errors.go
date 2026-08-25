@@ -3,18 +3,20 @@ package service
 import "errors"
 
 var (
-	ErrUserAlreadyExists = errors.New("user with this username is already exists")
-	ErrUserNotFound      = errors.New("user not found")
-	ErrInvalidPassword   = errors.New("invalid password")
-	ErrInvalidStruct     = errors.New("validation error")
+	ErrUserAlreadyExists = errors.New("пользователь с таким именем уже существует")
+	ErrUserNotFound      = errors.New("пользователь не найден")
+	ErrInvalidPassword   = errors.New("неверный пароль")
+	ErrInvalidStruct     = errors.New("ошибка валидации")
+	ErrInvalidAvatarURL  = errors.New("некорректный URL аватара")
 
-	ErrSendMessage              = errors.New("error sending message")
-	ErrFromUserEqualsToUser     = errors.New("you cannot send a message to yourself")
-	ErrReadMessagesFromYourself = errors.New("you cannot read a messages from yourself")
-	ErrUserNotVerified          = errors.New("пользователь не верифицирован")
-	ErrUserBlocked              = errors.New("пользователь заблокирован")
-	ErrAccessDenied             = errors.New("access denied")
-	ErrNewsNotFound             = errors.New("news not found")
-	// ???
-	ErrReadSomeoneElsesCorrespondence = errors.New("reading someone else's correspondence")
+	ErrSendMessage               = errors.New("ошибка отправки сообщения")
+	ErrFromUserEqualsToUser      = errors.New("нельзя отправить сообщение себе")
+	ErrReadMessagesFromYourself  = errors.New("нельзя читать сообщения с самим собой")
+	ErrInvalidMessagesPagination = errors.New("некорректная пагинация сообщений")
+	ErrUserNotVerified           = errors.New("пользователь не верифицирован")
+	ErrUserBlocked               = errors.New("пользователь заблокирован")
+	ErrAccessDenied              = errors.New("доступ запрещён")
+	ErrCannotBlockAdmin          = errors.New("нельзя заблокировать администратора")
+	ErrNewsNotFound              = errors.New("новость не найдена")
+	ErrReadSomeoneElsesCorrespondence = errors.New("чтение чужой переписки")
 )

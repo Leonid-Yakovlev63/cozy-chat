@@ -12,6 +12,7 @@ type userDB struct {
 	Username  string             `bson:"username" validate:"required,min=3"`
 	Password  string             `bson:"password" validate:"required,min=8"`
 	Status    string             `bson:"status"`
+	AvatarURL string             `bson:"avatarUrl"`
 	Verified  bool               `bson:"verified"`
 	Blocked   bool               `bson:"blocked"`
 	Role      domain.Role        `bson:"role"`
@@ -25,6 +26,7 @@ func toUserDB(u *domain.User) *userDB {
 		Username:  u.Username,
 		Password:  u.Password,
 		Status:    u.Status,
+		AvatarURL: u.AvatarURL,
 		Verified:  u.Verified,
 		Blocked:   u.Blocked,
 		Role:      u.Role,
@@ -38,11 +40,13 @@ func toDomainUser(u *userDB) *domain.User {
 	if role == "" {
 		role = domain.RoleUser
 	}
+
 	return &domain.User{
 		ID:        u.ID.Hex(),
 		Username:  u.Username,
 		Password:  u.Password,
 		Status:    u.Status,
+		AvatarURL: u.AvatarURL,
 		Verified:  u.Verified,
 		Blocked:   u.Blocked,
 		Role:      role,

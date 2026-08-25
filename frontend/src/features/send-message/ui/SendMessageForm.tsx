@@ -43,6 +43,7 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
   const [lastSentEmoji, setLastSentEmoji] = useState(readLastSentEmojiFromStorage)
 
   const disabled = !peerUsername.trim()
+  const busy = pending
 
   const rememberSelection = useCallback(() => {
     const el = contentRef.current
@@ -85,13 +86,13 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
     if (event.shiftKey) return
     if (event.nativeEvent.isComposing) return
     event.preventDefault()
-    if (disabled || pending || !content.trim()) return
+    if (disabled || busy || !content.trim()) return
     formRef.current?.requestSubmit()
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    if (disabled) return
+    if (disabled || busy) return
     setError(null)
     setPending(true)
     try {
@@ -124,6 +125,7 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
           {error}
         </p>
       ) : null}
+
       <div className="send-message-form__row">
         <div className="send-message-form__field">
           <TextAreaField
@@ -145,8 +147,8 @@ export function SendMessageForm({ token, peerUsername, onSent }: SendMessageForm
           />
         </div>
         <div className="send-message-form__actions">
-          <EmojiMenu triggerEmoji={lastSentEmoji} onPick={insertAtSelection} disabled={disabled || pending} />
-          <Button type="submit" disabled={disabled || pending || !content.trim()}>
+          <EmojiMenu triggerEmoji={lastSentEmoji} onPick={insertAtSelection} disabled={disabled || busy} />
+          <Button type="submit" disabled={disabled || busy || !content.trim()}>
             {pending ? '…' : 'Отправить'}
           </Button>
         </div>

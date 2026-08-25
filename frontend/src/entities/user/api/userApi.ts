@@ -20,6 +20,28 @@ export async function deleteMyStatus(token: string): Promise<void> {
   })
 }
 
+export async function updateMyAvatar(token: string, avatarUrl: string): Promise<void> {
+  await apiFetch<{ message?: string }>('/api/users/avatar', {
+    method: 'PATCH',
+    token,
+    body: { avatarUrl },
+  })
+}
+
+export async function deleteMyAvatar(token: string): Promise<void> {
+  await apiFetch<{ message?: string }>('/api/users/avatar', {
+    method: 'DELETE',
+    token,
+  })
+}
+
+export async function deleteMyAccount(token: string): Promise<void> {
+  await apiFetch<{ message?: string }>('/api/users/me', {
+    method: 'DELETE',
+    token,
+  })
+}
+
 export async function fetchUnverifiedUsers(token: string): Promise<UnverifiedUser[]> {
   return apiFetch<UnverifiedUser[]>('/api/admin/users/unverified', { token })
 }

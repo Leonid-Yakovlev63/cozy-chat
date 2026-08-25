@@ -2,8 +2,11 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { TextField } from '@/shared/ui/text-field'
 import { fetchPeers, type ChatPeer } from '@/entities/peer'
+import { UserAvatar } from '@/shared/ui/user-avatar/UserAvatar'
 import { ApiError } from '@/shared/api/errors'
 import '@/widgets/peer-panel/ui/PeerPanel.scss'
+
+const PEERS_POLL_INTERVAL_MS = 8_000
 
 function formatPeerTime(iso: string): string {
   const d = new Date(iso)
@@ -20,12 +23,6 @@ function formatPeerTime(iso: string): string {
   datePart = datePart.replace(/\s*г\.?\s*$/i, '').trim()
   const timePart = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(d)
   return `${datePart} ${timePart}`.replace(/\s+/g, ' ').trim()
-}
-
-function peerInitial(username: string): string {
-  const t = username.trim()
-  if (!t) return '?'
-  return t.slice(0, 1).toUpperCase()
 }
 
 type PeerPanelProps = {
@@ -54,26 +51,54 @@ export function PeerPanel({
   const [draft, setDraft] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
 
-  const loadPeers = useCallback(async () => {
+  const loadPeers = useCallback(async (options?: { silent?: boolean }) => {
     setListError(null)
-    setListBusy(true)
+    if (!options?.silent) setListBusy(true)
     try {
       const data = await fetchPeers(token)
       const self = selfUsername?.trim().toLowerCase() ?? ''
       const filtered = self ? data.filter((p) => p.username.trim().toLowerCase() !== self) : data
       setPeers(filtered)
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : 'Не удалось загрузить список чатов.'
-      setListError(message)
-      setPeers([])
+      if (!options?.silent) {
+        const message = e instanceof ApiError ? e.message : 'Не удалось загрузить список чатов.'
+        setListError(message)
+        setPeers([])
+      }
     } finally {
-      setListBusy(false)
+      if (!options?.silent) setListBusy(false)
     }
   }, [token, selfUsername])
 
   useEffect(() => {
     void loadPeers()
   }, [loadPeers, peerListVersion])
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      void loadPeers({ silent: true })
+    }, PEERS_POLL_INTERVAL_MS)
+    return () => window.clearInterval(id)
+  }, [loadPeers])
+
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === 'visible') {
+        void loadPeers({ silent: true })
+      }
+    }
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) {
+        void loadPeers({ silent: true })
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pageshow', onPageShow)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pageshow', onPageShow)
+    }
+  }, [loadPeers])
 
   function onSubmitManual(event: FormEvent) {
     event.preventDefault()
@@ -106,7 +131,7 @@ export function PeerPanel({
           </button>
         ) : null}
         <h2 className="peer-panel__title">Чаты</h2>
-        <Button type="button" variant="ghost" className="peer-panel__refresh" onClick={() => void loadPeers()} disabled={listBusy}>
+        <Button type="button" variant="ghost" className="peer-panel__refresh" onClick={() => void loadPeers({ silent: false })} disabled={listBusy}>
           Обновить
         </Button>
       </div>
@@ -117,7 +142,7 @@ export function PeerPanel({
         ) : listError ? (
           <div className="peer-panel__error-box">
             <p className="peer-panel__error">{listError}</p>
-            <Button type="button" variant="ghost" onClick={() => void loadPeers()}>
+            <Button type="button" variant="ghost" onClick={() => void loadPeers({ silent: false })}>
               Повторить
             </Button>
           </div>
@@ -131,12 +156,12 @@ export function PeerPanel({
               return (
                 <li className="peer-list__item" key={p.username}>
                   <button type="button" className={rowClass} onClick={() => onOpenPeer(p.username)}>
-                    <span className="peer-list__avatar" aria-hidden>
-                      {peerInitial(p.username)}
-                    </span>
+                    <UserAvatar className="peer-list__avatar" username={p.username} avatarUrl={p.avatarUrl} />
                     <span className="peer-list__body">
                       <span className="peer-list__top">
-                        <span className="peer-list__name">{p.username}</span>
+                        <span className="peer-list__name-line">
+                          <span className="peer-list__name">{p.username}</span>
+                        </span>
                         <time className="peer-list__time" dateTime={p.lastMessageAt}>
                           {formatPeerTime(p.lastMessageAt)}
                         </time>

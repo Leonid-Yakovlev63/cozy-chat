@@ -1,0 +1,85 @@
+.image-link-preview {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  vertical-align: top;
+  max-width: min(42rem, 100%);
+  margin: 0.35rem 0 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
+}
+
+.image-link-preview--article {
+  max-width: min(40rem, 100%);
+}
+
+.image-link-preview__img {
+  display: block;
+  max-width: 100%;
+  max-height: 36rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.image-link-preview--article .image-link-preview__img {
+  max-height: 30rem;
+}
+
+.image-link-preview__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.75rem;
+  line-height: normal;
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+
+.image-link-preview:hover .image-link-preview__overlay,
+.image-link-preview:focus-within .image-link-preview__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image-link-preview__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-bg) 35%, transparent);
+}
+
+.image-link-preview__copy:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.image-link-preview__copy:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.image-link-preview__fallback {
+  overflow-wrap: anywhere;
+  color: var(--color-accent-strong);
+}

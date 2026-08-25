@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/domain"
+	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/validator"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
 )
 
@@ -15,17 +16,20 @@ type (
 		ListUnverified(w http.ResponseWriter, r *http.Request)
 		VerifyUser(w http.ResponseWriter, r *http.Request)
 		BlockUser(w http.ResponseWriter, r *http.Request)
+		ListUsers(w http.ResponseWriter, r *http.Request)
 	}
 	adminHandler struct {
 		userService service.UserService
 		authService service.AuthService
+		validator   validator.Validator
 	}
 )
 
-func NewAdminHandler(userService service.UserService, authService service.AuthService) AdminHandler {
+func NewAdminHandler(userService service.UserService, authService service.AuthService, validator validator.Validator) AdminHandler {
 	return &adminHandler{
 		userService: userService,
 		authService: authService,
+		validator:   validator,
 	}
 }
 
@@ -33,6 +37,7 @@ func (h *adminHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/admin/users/unverified", AdminMiddleware(h.authService, h.userService)(http.HandlerFunc(h.ListUnverified)))
 	mux.Handle("POST /api/admin/users/{username}/verify", AdminMiddleware(h.authService, h.userService)(http.HandlerFunc(h.VerifyUser)))
 	mux.Handle("POST /api/admin/users/{username}/block", AdminMiddleware(h.authService, h.userService)(http.HandlerFunc(h.BlockUser)))
+	mux.Handle("GET /api/admin/users", AdminMiddleware(h.authService, h.userService)(http.HandlerFunc(h.ListUsers)))
 }
 
 func (h *adminHandler) ListUnverified(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +108,25 @@ func (h *adminHandler) BlockUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusForbidden)
 	case errors.Is(err, service.ErrUserNotFound):
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusNotFound)
+	default:
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+	}
+}
+
+func (h *adminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	username, ok := r.Context().Value(UserContextKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	users, err := h.userService.ListAllUsers(r.Context(), username)
+	switch {
+	case err == nil:
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(sanitizeUsers(users))
+	case errors.Is(err, service.ErrAccessDenied):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusForbidden)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}

@@ -5,6 +5,7 @@ export type CurrentUser = {
   id: string
   username: string
   status: string
+  avatarUrl?: string
   verified: boolean
   role: UserRole
   createdAt: string

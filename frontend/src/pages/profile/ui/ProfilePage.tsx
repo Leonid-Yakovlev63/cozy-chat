@@ -1,32 +1,24 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/widgets/app-header'
 import { Button } from '@/shared/ui/button'
-import { TextAreaField } from '@/shared/ui/text-field'
+import { TextAreaField, TextField } from '@/shared/ui/text-field'
 import { useSession } from '@/entities/session'
-import { deleteMyStatus, fetchMyProfile, updateMyStatus, type CurrentUser } from '@/entities/user'
+import {
+  deleteMyAccount,
+  deleteMyAvatar,
+  deleteMyStatus,
+  fetchMyProfile,
+  updateMyAvatar,
+  updateMyStatus,
+  type CurrentUser,
+} from '@/entities/user'
+import { AVATAR_URL_MAX, isAvatarUrl } from '@/shared/lib/isAvatarUrl'
+import { UserAvatar } from '@/shared/ui/user-avatar/UserAvatar'
 import { ApiError } from '@/shared/api/errors'
 import '@/pages/profile/ui/ProfilePage.scss'
 
 const STATUS_MAX = 500
-
-function PencilIcon() {
-  return (
-    <svg className="profile-page__pencil-icon" viewBox="0 0 24 24" width={20} height={20} aria-hidden>
-      <path
-        fill="currentColor"
-        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"
-      />
-    </svg>
-  )
-}
-
-function avatarLetter(username: string): string {
-  const t = username.trim()
-  if (!t) return '?'
-  const ch = t.codePointAt(0)
-  if (ch === undefined) return '?'
-  return String.fromCodePoint(ch).toUpperCase()
-}
 
 function formatJoined(iso: string): string {
   const d = new Date(iso)
@@ -35,15 +27,20 @@ function formatJoined(iso: string): string {
 }
 
 export function ProfilePage() {
-  const { token, username } = useSession()
+  const navigate = useNavigate()
+  const { token, username, logout } = useSession()
   const [profile, setProfile] = useState<CurrentUser | null>(null)
   const [statusDraft, setStatusDraft] = useState('')
-  const [editingStatus, setEditingStatus] = useState(false)
+  const [avatarDraft, setAvatarDraft] = useState('')
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [deletingAvatar, setDeletingAvatar] = useState(false)
+  const [deletingStatus, setDeletingStatus] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [savedHint, setSavedHint] = useState(false)
+  const [settingsError, setSettingsError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -53,6 +50,7 @@ export function ProfilePage() {
       const u = await fetchMyProfile(token)
       setProfile(u)
       setStatusDraft(u.status)
+      setAvatarDraft(u.avatarUrl ?? '')
     } catch (e) {
       const msg = e instanceof ApiError ? e.message : 'Не удалось загрузить профиль.'
       setError(msg)
@@ -66,60 +64,131 @@ export function ProfilePage() {
     void load()
   }, [load])
 
-  function startEditStatus() {
+  useEffect(() => {
+    if (!settingsOpen && !deleteConfirmOpen) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape' || saving || deletingAvatar || deletingStatus || deletingAccount) return
+      if (deleteConfirmOpen) {
+        setDeleteConfirmOpen(false)
+        return
+      }
+      closeSettings()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [settingsOpen, deleteConfirmOpen, saving, deletingAvatar, deletingStatus, deletingAccount])
+
+  function openSettings() {
     if (!profile) return
-    setEditingStatus(true)
     setStatusDraft(profile.status)
-    setError(null)
-    setSavedHint(false)
+    setAvatarDraft(profile.avatarUrl ?? '')
+    setSettingsError(null)
+    setSettingsOpen(true)
   }
 
-  function cancelEditStatus() {
-    if (!profile) return
-    setEditingStatus(false)
-    setStatusDraft(profile.status)
-    setError(null)
+  function closeSettings() {
+    if (saving || deletingAvatar || deletingStatus || deletingAccount) return
+    setSettingsOpen(false)
+    setDeleteConfirmOpen(false)
+    setSettingsError(null)
+    if (profile) {
+      setStatusDraft(profile.status)
+      setAvatarDraft(profile.avatarUrl ?? '')
+    }
+  }
+
+  async function confirmDeleteAccount() {
+    if (!token || deletingAccount) return
+    setSettingsError(null)
+    setDeletingAccount(true)
+    try {
+      await deleteMyAccount(token)
+      logout()
+      navigate('/login', { replace: true })
+    } catch (e) {
+      const msg = e instanceof ApiError ? e.message : 'Не удалось удалить аккаунт.'
+      setSettingsError(msg)
+      setDeleteConfirmOpen(false)
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
+  async function removeAvatar() {
+    if (!token || !profile || saving || deletingAvatar) return
+    setSettingsError(null)
+    setDeletingAvatar(true)
+    try {
+      await deleteMyAvatar(token)
+      await load()
+      setAvatarDraft('')
+    } catch (e) {
+      const msg = e instanceof ApiError ? e.message : 'Не удалось удалить аватар.'
+      setSettingsError(msg)
+    } finally {
+      setDeletingAvatar(false)
+    }
   }
 
   async function removeStatus() {
-    if (!token || !profile || saving || deleting) return
-    setError(null)
-    setSavedHint(false)
-    setDeleting(true)
+    if (!token || !profile || saving || deletingStatus) return
+    setSettingsError(null)
+    setDeletingStatus(true)
     try {
       await deleteMyStatus(token)
-      setSavedHint(true)
-      window.setTimeout(() => setSavedHint(false), 3500)
-      setEditingStatus(false)
       await load()
+      setStatusDraft('')
     } catch (e) {
       const msg = e instanceof ApiError ? e.message : 'Не удалось удалить статус.'
-      setError(msg)
+      setSettingsError(msg)
     } finally {
-      setDeleting(false)
+      setDeletingStatus(false)
     }
   }
 
-  async function saveStatus(event: FormEvent) {
+  async function saveSettings(event: FormEvent) {
     event.preventDefault()
-    if (!token || !profile || saving || deleting) return
-    setError(null)
-    setSavedHint(false)
-    const trimmed = statusDraft.trim()
-    if (trimmed.length < 1 || trimmed.length > STATUS_MAX) {
-      setError(`Статус: от 1 до ${STATUS_MAX} символов.`)
+    if (!token || !profile || saving || deletingAvatar || deletingStatus) return
+
+    setSettingsError(null)
+
+    const trimmedStatus = statusDraft.trim()
+    const trimmedAvatar = avatarDraft.trim()
+    const statusChanged = trimmedStatus !== (profile.status?.trim() ?? '')
+    const avatarChanged = trimmedAvatar !== (profile.avatarUrl?.trim() ?? '')
+
+    if (!statusChanged && !avatarChanged) {
+      setSettingsOpen(false)
       return
     }
+
+    if (statusChanged) {
+      if (trimmedStatus.length < 1 || trimmedStatus.length > STATUS_MAX) {
+        setSettingsError(`Статус: от 1 до ${STATUS_MAX} символов.`)
+        return
+      }
+    }
+
+    if (avatarChanged) {
+      if (!isAvatarUrl(trimmedAvatar)) {
+        setSettingsError(`Укажите ссылку вида https://… (до ${AVATAR_URL_MAX} символов).`)
+        return
+      }
+    }
+
     setSaving(true)
     try {
-      await updateMyStatus(token, trimmed)
-      setSavedHint(true)
-      window.setTimeout(() => setSavedHint(false), 3500)
-      setEditingStatus(false)
+      if (avatarChanged) {
+        await updateMyAvatar(token, trimmedAvatar)
+      }
+      if (statusChanged) {
+        await updateMyStatus(token, trimmedStatus)
+      }
       await load()
+      setSettingsOpen(false)
     } catch (e) {
-      const msg = e instanceof ApiError ? e.message : 'Не удалось сохранить статус.'
-      setError(msg)
+      const msg = e instanceof ApiError ? e.message : 'Не удалось сохранить настройки.'
+      setSettingsError(msg)
     } finally {
       setSaving(false)
     }
@@ -127,102 +196,184 @@ export function ProfilePage() {
 
   const name = profile?.username ?? username ?? ''
   const displayStatus = profile?.status?.trim() ? profile.status : ''
+  const settingsBusy = saving || deletingAvatar || deletingStatus || deletingAccount
 
   return (
     <div className="profile-page">
       <AppHeader username={username} />
-      <main className="profile-page__main">
-        <div className="profile-page__shell">
-          <article className="profile-page__card">
-            {loading ? (
-              <p className="profile-page__lead profile-page__lead--muted">Загрузка…</p>
-            ) : profile ? (
-              <>
-                <div className="profile-page__card-head">
-                  <p className="profile-page__eyebrow">Личная страница</p>
+      <main className={['profile-page__main', settingsOpen ? 'profile-page__main--settings' : ''].filter(Boolean).join(' ')}>
+        {settingsOpen && profile ? (
+          <section className="profile-page__settings-screen" aria-labelledby="profile-settings-title">
+            <header className="profile-page__settings-head">
+              <Button type="button" variant="ghost" className="profile-page__settings-back" disabled={settingsBusy} onClick={closeSettings}>
+                Назад
+              </Button>
+              <h2 id="profile-settings-title" className="profile-page__settings-title">
+                Настройки
+              </h2>
+            </header>
+
+            <div className="profile-page__settings-body">
+              <form id="profile-settings-form" className="profile-page__settings-form" onSubmit={saveSettings}>
+                <div className="profile-page__settings-preview">
+                  <UserAvatar username={name} avatarUrl={avatarDraft || profile.avatarUrl} size="sm" />
+                  <p className="profile-page__settings-preview-name">{name}</p>
                 </div>
 
-                <header className="profile-page__hero">
-                  <div className="profile-page__avatar" aria-hidden>
-                    {avatarLetter(name)}
-                  </div>
-                  <h1 className="profile-page__name">{name}</h1>
-                  {profile.createdAt ? (
-                    <p className="profile-page__joined">В Cozy Chat с {formatJoined(profile.createdAt)}</p>
+                <fieldset className="profile-page__settings-group" disabled={settingsBusy}>
+                  <legend className="profile-page__settings-legend">Аватар</legend>
+                  <TextField
+                    name="avatarUrl"
+                    label="Ссылка на картинку"
+                    value={avatarDraft}
+                    onChange={(e) => setAvatarDraft(e.target.value)}
+                    maxLength={AVATAR_URL_MAX}
+                    placeholder="https://example.com/avatar.png"
+                    hint="Прямая ссылка на изображение в интернете."
+                  />
+                  {profile.avatarUrl ? (
+                    <Button type="button" variant="danger" disabled={settingsBusy} onClick={() => void removeAvatar()}>
+                      {deletingAvatar ? 'Удаление…' : 'Удалить аватар'}
+                    </Button>
                   ) : null}
-                </header>
+                </fieldset>
 
-                <section className="profile-page__section" aria-labelledby="profile-about-heading">
-                  <div className="profile-page__section-head">
+                <fieldset className="profile-page__settings-group" disabled={settingsBusy}>
+                  <legend className="profile-page__settings-legend">О себе</legend>
+                  <TextAreaField
+                    name="status"
+                    label="Текст статуса"
+                    value={statusDraft}
+                    onChange={(e) => setStatusDraft(e.target.value)}
+                    maxLength={STATUS_MAX}
+                    rows={5}
+                    hint={`До ${STATUS_MAX} символов.`}
+                  />
+                  {profile.status?.trim() ? (
+                    <Button type="button" variant="danger" disabled={settingsBusy} onClick={() => void removeStatus()}>
+                      {deletingStatus ? 'Удаление…' : 'Удалить статус'}
+                    </Button>
+                  ) : null}
+                </fieldset>
+
+                {settingsError ? (
+                  <p className="profile-page__error" role="alert">
+                    {settingsError}
+                  </p>
+                ) : null}
+
+                <fieldset className="profile-page__settings-group profile-page__settings-group--danger" disabled={settingsBusy}>
+                  <legend className="profile-page__settings-legend">Опасная зона</legend>
+                  <p className="profile-page__danger-hint">
+                    Удаление аккаунта необратимо: исчезнут профиль и все ваши сообщения в переписках.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    disabled={settingsBusy}
+                    onClick={() => {
+                      setSettingsError(null)
+                      setDeleteConfirmOpen(true)
+                    }}
+                  >
+                    Удалить мой аккаунт
+                  </Button>
+                </fieldset>
+              </form>
+            </div>
+
+            <footer className="profile-page__settings-foot">
+              <div className="profile-page__edit-actions">
+                <Button type="submit" form="profile-settings-form" disabled={settingsBusy}>
+                  {saving ? 'Сохранение…' : 'Сохранить'}
+                </Button>
+                <Button type="button" variant="ghost" disabled={settingsBusy} onClick={closeSettings}>
+                  Отмена
+                </Button>
+              </div>
+            </footer>
+          </section>
+        ) : (
+          <div className="profile-page__shell">
+            <article className="profile-page__card">
+              {loading ? (
+                <p className="profile-page__lead profile-page__lead--muted">Загрузка…</p>
+              ) : profile ? (
+                <>
+                  <div className="profile-page__card-head">
+                    <p className="profile-page__eyebrow">Личная страница</p>
+                    <Button type="button" variant="ghost" className="profile-page__settings-btn" onClick={openSettings}>
+                      Настройки
+                    </Button>
+                  </div>
+
+                  <header className="profile-page__hero">
+                    <UserAvatar username={name} avatarUrl={profile.avatarUrl} size="lg" />
+                    <h1 className="profile-page__name">{name}</h1>
+                    {profile.createdAt ? (
+                      <p className="profile-page__joined">В Cozy Chat с {formatJoined(profile.createdAt)}</p>
+                    ) : null}
+                  </header>
+
+                  <section className="profile-page__section" aria-labelledby="profile-about-heading">
                     <h2 id="profile-about-heading" className="profile-page__section-title">
                       О себе
                     </h2>
-                    {!editingStatus ? (
-                      <button
-                        type="button"
-                        className="profile-page__edit-trigger"
-                        aria-label="Редактировать статус"
-                        onClick={startEditStatus}
-                      >
-                        <PencilIcon />
-                      </button>
-                    ) : null}
-                  </div>
-
-                  {editingStatus ? (
-                    <form className="profile-page__edit-form" onSubmit={saveStatus}>
-                      <TextAreaField
-                        name="status"
-                        label="Текст статуса"
-                        value={statusDraft}
-                        onChange={(e) => setStatusDraft(e.target.value)}
-                        maxLength={STATUS_MAX}
-                        rows={5}
-                        hint={`До ${STATUS_MAX} символов.`}
-                      />
-                      {error ? (
-                        <p className="profile-page__error" role="alert">
-                          {error}
-                        </p>
-                      ) : null}
-                      <div className="profile-page__edit-actions">
-                        <Button
-                          type="button"
-                          variant="danger"
-                          disabled={saving || deleting}
-                          onClick={() => void removeStatus()}
-                        >
-                          {deleting ? 'Удаление…' : 'Удалить'}
-                        </Button>
-                        <span className="profile-page__edit-actions-gap" aria-hidden />
-                        <Button type="submit" disabled={saving || deleting}>
-                          {saving ? 'Сохранение…' : 'Сохранить'}
-                        </Button>
-                        <Button type="button" variant="ghost" disabled={saving || deleting} onClick={cancelEditStatus}>
-                          Отмена
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="profile-page__about-body">
-                      {displayStatus ? <p className="profile-page__status-text">{displayStatus}</p> : null}
-                      {savedHint ? (
-                        <p className="profile-page__success" role="status">
-                          Изменения сохранены
-                        </p>
-                      ) : null}
-                    </div>
-                  )}
-                </section>
-              </>
-            ) : (
-              <p className="profile-page__error profile-page__error--block" role="alert">
-                {error ?? 'Профиль недоступен.'}
-              </p>
-            )}
-          </article>
-        </div>
+                    {displayStatus ? (
+                      <p className="profile-page__status-text">{displayStatus}</p>
+                    ) : (
+                      <p className="profile-page__muted-inline">Статус не задан.</p>
+                    )}
+                  </section>
+                </>
+              ) : (
+                <p className="profile-page__error profile-page__error--block" role="alert">
+                  {error ?? 'Профиль недоступен.'}
+                </p>
+              )}
+            </article>
+          </div>
+        )}
       </main>
+
+      {deleteConfirmOpen ? (
+        <div className="profile-page__confirm" role="presentation">
+          <button
+            type="button"
+            className="profile-page__modal-backdrop"
+            aria-label="Закрыть"
+            disabled={deletingAccount}
+            onClick={() => setDeleteConfirmOpen(false)}
+          />
+          <div
+            className="profile-page__confirm-panel"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="profile-delete-title"
+            aria-describedby="profile-delete-desc"
+          >
+            <h3 id="profile-delete-title" className="profile-page__confirm-title">
+              Удалить аккаунт?
+            </h3>
+            <p id="profile-delete-desc" className="profile-page__confirm-text">
+              Будут безвозвратно удалены ваш профиль и все отправленные и полученные сообщения. Это действие нельзя отменить.
+            </p>
+            {settingsError ? (
+              <p className="profile-page__error" role="alert">
+                {settingsError}
+              </p>
+            ) : null}
+            <div className="profile-page__confirm-actions">
+              <Button type="button" variant="danger" disabled={deletingAccount} onClick={() => void confirmDeleteAccount()}>
+                {deletingAccount ? 'Удаление…' : 'Да, удалить'}
+              </Button>
+              <Button type="button" variant="ghost" disabled={deletingAccount} onClick={() => setDeleteConfirmOpen(false)}>
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

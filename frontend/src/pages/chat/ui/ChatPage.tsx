@@ -4,7 +4,12 @@ import { AppHeader } from '@/widgets/app-header'
 import { ChatLayout } from '@/widgets/chat-layout'
 import { MessageThread } from '@/widgets/message-thread'
 import { PeerPanel } from '@/widgets/peer-panel'
-import { fetchMessagesWithUser, type ChatMessage } from '@/entities/message'
+import {
+  fetchMessagesWithUser,
+  mergeChatMessages,
+  MESSAGES_PAGE_SIZE,
+  type ChatMessage,
+} from '@/entities/message'
 import { useSession } from '@/entities/session'
 import { ApiError } from '@/shared/api/errors'
 import { useMediaQuery } from '@/shared/lib/useMediaQuery'
@@ -32,10 +37,12 @@ export function ChatPage() {
   const [mobilePeerDrawerOpen, setMobilePeerDrawerOpen] = useState(false)
   const [peer, setPeer] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [historyOffset, setHistoryOffset] = useState(0)
+  const [hasMoreHistory, setHasMoreHistory] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [peerListVersion, setPeerListVersion] = useState(0)
-
   const invalidatePeerList = useCallback(() => {
     setPeerListVersion((v) => v + 1)
   }, [])
@@ -58,30 +65,69 @@ export function ChatPage() {
     setMobilePeerDrawerOpen(false)
   }, [])
 
-  const loadPeerMessages = useCallback(async (opts?: { silent?: boolean }) => {
-    const silent = Boolean(opts?.silent)
+  const applyInitialPage = useCallback((data: ChatMessage[]) => {
+    setMessages(data)
+    setHistoryOffset(data.length)
+    setHasMoreHistory(data.length >= MESSAGES_PAGE_SIZE)
+  }, [])
+
+  const loadInitialMessages = useCallback(async () => {
     if (!token || !peer) {
       setMessages([])
+      setHistoryOffset(0)
+      setHasMoreHistory(false)
       setError(null)
       setLoading(false)
       return
     }
 
-    if (!silent) setLoading(true)
+    setLoading(true)
     setError(null)
     try {
-      const data = await fetchMessagesWithUser(token, peer)
-      setMessages(data)
+      const data = await fetchMessagesWithUser(token, peer, { limit: MESSAGES_PAGE_SIZE, offset: 0 })
+      applyInitialPage(data)
     } catch (e) {
-      if (!silent) {
-        const message = e instanceof ApiError ? e.message : 'Не удалось загрузить сообщения.'
-        setError(formatChatLoadError(message))
-        setMessages([])
-      }
+      const message = e instanceof ApiError ? e.message : 'Не удалось загрузить сообщения.'
+      setError(formatChatLoadError(message))
+      setMessages([])
+      setHistoryOffset(0)
+      setHasMoreHistory(false)
     } finally {
-      if (!silent) setLoading(false)
+      setLoading(false)
+    }
+  }, [applyInitialPage, peer, token])
+
+  const refreshLatestMessages = useCallback(async () => {
+    if (!token || !peer) return
+
+    try {
+      const latest = await fetchMessagesWithUser(token, peer, { limit: MESSAGES_PAGE_SIZE, offset: 0 })
+      setMessages((prev) => mergeChatMessages(prev, latest))
+    } catch {
+      /* тихий опрос / после отправки */
     }
   }, [peer, token])
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!token || !peer || !hasMoreHistory || loadingOlder) return
+
+    setLoadingOlder(true)
+    setError(null)
+    try {
+      const older = await fetchMessagesWithUser(token, peer, {
+        limit: MESSAGES_PAGE_SIZE,
+        offset: historyOffset,
+      })
+      setMessages((prev) => mergeChatMessages(prev, older))
+      setHistoryOffset((prev) => prev + older.length)
+      setHasMoreHistory(older.length >= MESSAGES_PAGE_SIZE)
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : 'Не удалось загрузить предыдущие сообщения.'
+      setError(formatChatLoadError(message))
+    } finally {
+      setLoadingOlder(false)
+    }
+  }, [hasMoreHistory, historyOffset, loadingOlder, peer, token])
 
   useEffect(() => {
     let cancelled = false
@@ -89,36 +135,36 @@ export function ChatPage() {
     void (async () => {
       await Promise.resolve()
       if (cancelled) return
-      await loadPeerMessages()
+      await loadInitialMessages()
     })()
 
     return () => {
       cancelled = true
     }
-  }, [loadPeerMessages])
+  }, [loadInitialMessages])
 
   useEffect(() => {
     if (!peer || !token) return
 
     const id = window.setInterval(() => {
-      void loadPeerMessages({ silent: true })
+      void refreshLatestMessages()
     }, MESSAGES_POLL_INTERVAL_MS)
 
     return () => window.clearInterval(id)
-  }, [peer, token, loadPeerMessages])
+  }, [peer, token, refreshLatestMessages])
 
   useEffect(() => {
     if (!peer || !token) return
 
     function onVisibility() {
       if (document.visibilityState === 'visible') {
-        void loadPeerMessages({ silent: true })
+        void refreshLatestMessages()
       }
     }
 
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [peer, token, loadPeerMessages])
+  }, [peer, token, refreshLatestMessages])
 
   if (!token) return <Navigate to="/login" replace />
 
@@ -150,9 +196,12 @@ export function ChatPage() {
               peerUsername={peer}
               messages={messages}
               loading={loading}
+              loadingOlder={loadingOlder}
+              hasMoreHistory={hasMoreHistory}
               error={error}
-              onRefreshQuiet={() => void loadPeerMessages({ silent: true })}
-              onRefreshFull={() => void loadPeerMessages({ silent: false })}
+              onLoadOlder={() => void loadOlderMessages()}
+              onRefreshQuiet={() => void refreshLatestMessages()}
+              onRefreshFull={() => void refreshLatestMessages()}
               onPeerListInvalidated={invalidatePeerList}
               onOpenPeerList={isMobileChatLayout ? () => setMobilePeerDrawerOpen(true) : undefined}
               peerListDrawerOpen={isMobileChatLayout ? mobilePeerDrawerOpen : undefined}

@@ -1,8 +1,15 @@
+import { useEffect, useRef } from 'react'
 import { SendMessageForm } from '@/features/send-message'
 import { Button } from '@/shared/ui/button'
+import { parseMessageTextSegments } from '@/shared/lib/parseMessageTextSegments'
 import { MessageRichText } from '@/shared/ui/message-rich-text/MessageRichText'
 import type { ChatMessage } from '@/entities/message'
 import '@/widgets/message-thread/ui/MessageThread.scss'
+
+function isImageOnlyContent(content: string): boolean {
+  const segments = parseMessageTextSegments(content)
+  return segments.length === 1 && segments[0].type === 'image-link'
+}
 
 function formatTime(iso: string): string {
   const d = new Date(iso)
@@ -17,7 +24,15 @@ type MessageBubbleProps = {
 
 function MessageBubble({ message, selfUsername }: MessageBubbleProps) {
   const outgoing = message.fromUser === selfUsername
-  const bubbleClass = ['message-bubble', outgoing ? 'message-bubble--outgoing' : 'message-bubble--incoming'].join(' ')
+  const imageOnly = isImageOnlyContent(message.content)
+  const bubbleClass = [
+    'message-bubble',
+    outgoing ? 'message-bubble--outgoing' : 'message-bubble--incoming',
+    imageOnly ? 'message-bubble--image-only' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   const statusClass = [
     'message-bubble__status',
     message.isRead ? 'message-bubble__status--read' : 'message-bubble__status--unread',
@@ -45,7 +60,10 @@ type MessageThreadProps = {
   peerUsername: string | null
   messages: ChatMessage[]
   loading: boolean
+  loadingOlder?: boolean
+  hasMoreHistory?: boolean
   error: string | null
+  onLoadOlder?: () => void
   onRefreshQuiet: () => void
   onRefreshFull: () => void
   onPeerListInvalidated?: () => void
@@ -60,14 +78,39 @@ export function MessageThread({
   peerUsername,
   messages,
   loading,
+  loadingOlder = false,
+  hasMoreHistory = false,
   error,
+  onLoadOlder,
   onRefreshQuiet,
   onRefreshFull,
   onPeerListInvalidated,
   onOpenPeerList,
   peerListDrawerOpen,
 }: MessageThreadProps) {
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const pendingScrollHeightRef = useRef(0)
   const sorted = [...messages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+
+  useEffect(() => {
+    const el = bodyRef.current
+    const pending = pendingScrollHeightRef.current
+    if (!el || pending <= 0) return
+
+    const delta = el.scrollHeight - pending
+    if (delta > 0) {
+      el.scrollTop += delta
+    }
+    pendingScrollHeightRef.current = 0
+  }, [sorted.length])
+
+  function handleLoadOlder() {
+    const el = bodyRef.current
+    if (el) {
+      pendingScrollHeightRef.current = el.scrollHeight
+    }
+    onLoadOlder?.()
+  }
 
   return (
     <section className="message-thread">
@@ -89,7 +132,16 @@ export function MessageThread({
           ) : null}
         </div>
         <div className="message-thread__toolbar-main">
-          <p className="message-thread__peer">{peerUsername ? `Диалог с ${peerUsername}` : 'Диалог не выбран'}</p>
+          <p className="message-thread__peer">
+            {peerUsername ? (
+              <span className="message-thread__peer-line">
+                <span className="message-thread__peer-label">Диалог с</span>
+                <span className="message-thread__peer-name">{peerUsername}</span>
+              </span>
+            ) : (
+              'Диалог не выбран'
+            )}
+          </p>
         </div>
         {peerUsername ? (
           <div className="message-thread__actions">
@@ -106,25 +158,40 @@ export function MessageThread({
         </p>
       ) : null}
 
-      <div className="message-thread__body">
+      <div className="message-thread__body" ref={bodyRef}>
         {!peerUsername ? (
           <p className="message-thread__empty">
             {onOpenPeerList
               ? 'Нажмите кнопку меню вверху слева, чтобы открыть список чатов и выбрать диалог.'
               : 'Выберите username слева и нажмите «Открыть чат», чтобы загрузить историю.'}
           </p>
-        ) : loading ? (
+        ) : loading && sorted.length === 0 ? (
           <p className="message-thread__loading">Загрузка…</p>
         ) : sorted.length === 0 ? (
           <p className="message-thread__empty">Пока нет сообщений. Напишите первое — оно появится здесь.</p>
         ) : (
-          sorted.map((m, index) => (
-            <MessageBubble
-              key={m.id ? m.id : `${m.createdAt}-${m.fromUser}-${index}`}
-              message={m}
-              selfUsername={selfUsername}
-            />
-          ))
+          <>
+            {hasMoreHistory ? (
+              <div className="message-thread__history">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="message-thread__history-btn"
+                  disabled={loadingOlder}
+                  onClick={handleLoadOlder}
+                >
+                  {loadingOlder ? 'Загрузка…' : 'Загрузить предыдущие сообщения'}
+                </Button>
+              </div>
+            ) : null}
+            {sorted.map((m, index) => (
+              <MessageBubble
+                key={m.id ? m.id : `${m.createdAt}-${m.fromUser}-${index}`}
+                message={m}
+                selfUsername={selfUsername}
+              />
+            ))}
+          </>
         )}
       </div>
 

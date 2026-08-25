@@ -1,4 +1,4 @@
-export type ThemeId = 'light' | 'dark' | 'coffee' | 'lunar' | 'sunny' | 'mars' | 'aero'
+export type ThemeId = 'light' | 'dark' | 'coffee' | 'lunar' | 'sunny' | 'mars' | 'aero' | 'pink' | 'fox'
 
 export const THEME_STORAGE_KEY = 'cozy_chat_theme'
 
@@ -10,9 +10,11 @@ export const THEMES: { id: ThemeId; label: string }[] = [
   { id: 'sunny', label: 'Солнечная' },
   { id: 'mars', label: 'Марс' },
   { id: 'aero', label: 'Frutiger Aero' },
+  { id: 'pink', label: 'Розовая' },
+  { id: 'fox', label: 'Лисья' },
 ]
 
-export const DEFAULT_THEME: ThemeId = 'coffee'
+export const DEFAULT_THEME: ThemeId = 'dark'
 
 export function isThemeId(value: string | null): value is ThemeId {
   return (
@@ -22,7 +24,9 @@ export function isThemeId(value: string | null): value is ThemeId {
     value === 'lunar' ||
     value === 'sunny' ||
     value === 'mars' ||
-    value === 'aero'
+    value === 'aero' ||
+    value === 'pink' ||
+    value === 'fox'
   )
 }
 

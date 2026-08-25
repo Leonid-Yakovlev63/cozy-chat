@@ -69,6 +69,10 @@ export function AdminNewsPage() {
     insertAtSelection('```\n\n```', 4)
   }, [insertAtSelection])
 
+  const insertImageLink = useCallback(() => {
+    insertAtSelection('\nhttps://', 9)
+  }, [insertAtSelection])
+
   const load = useCallback(async () => {
     if (!token) return
     setListError(null)
@@ -204,7 +208,7 @@ export function AdminNewsPage() {
                     <p className="admin-news-page__item-meta">
                       {item.authorUsername} · {formatDate(item.createdAt)}
                     </p>
-                    <MessageRichText content={item.content} className="admin-news-page__item-preview" />
+                    <MessageRichText content={item.content} className="admin-news-page__item-preview" imageSize="article" />
                   </div>
                   <Button
                     type="button"
@@ -280,6 +284,16 @@ export function AdminNewsPage() {
                       onClick={insertCodeFence}
                     >
                       <span aria-hidden>{'</>'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-news-page__image-trigger"
+                      disabled={publishing}
+                      aria-label="Вставить ссылку на картинку"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={insertImageLink}
+                    >
+                      <span aria-hidden>🖼</span>
                     </button>
                   </div>
                 </div>

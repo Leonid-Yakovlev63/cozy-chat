@@ -65,13 +65,16 @@ export function AppHeader({ username }: AppHeaderProps) {
                 ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
               }
             >
-              Администрирование
+              <span className="app-header__link-text app-header__link-text--long">Администрирование</span>
+              <span className="app-header__link-text app-header__link-text--short">Админ</span>
             </NavLink>
           ) : null}
           <NavLink
             to="/profile"
             className={({ isActive }) =>
-              ['app-header__profile-link', isActive ? 'app-header__profile-link--active' : ''].filter(Boolean).join(' ')
+              ['app-header__profile-link', 'app-header__profile-link--profile', isActive ? 'app-header__profile-link--active' : '']
+                .filter(Boolean)
+                .join(' ')
             }
           >
             <span className="app-header__profile-name">{username ?? '…'}</span>

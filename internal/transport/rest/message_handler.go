@@ -16,6 +16,7 @@ type (
 		RegisterRoutes(mux *http.ServeMux)
 		SendMessage(w http.ResponseWriter, r *http.Request)
 		ReadLatestMessagesFromUser(w http.ResponseWriter, r *http.Request)
+		ReadMessagesFromUser(w http.ResponseWriter, r *http.Request)
 		ListPeers(w http.ResponseWriter, r *http.Request)
 	}
 	messageHandler struct {
@@ -26,7 +27,11 @@ type (
 )
 
 func NewMessageHandler(messageService service.MessageService, authService service.AuthService, validator validator.Validator) MessageHandler {
-	return &messageHandler{messageService: messageService, authService: authService, validator: validator}
+	return &messageHandler{
+		messageService: messageService,
+		authService:    authService,
+		validator:      validator,
+	}
 }
 
 func (h *messageHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
@@ -49,11 +54,7 @@ func (h *messageHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var message domain.Message
-
-	message = domain.NewMessage(username, req.ToUser, req.Content)
-
-	err := h.messageService.SendMessage(r.Context(), message)
+	err := h.messageService.SendMessage(r.Context(), username, req.ToUser, req.Content)
 	switch {
 	case err == nil:
 		w.WriteHeader(http.StatusCreated)
@@ -62,6 +63,8 @@ func (h *messageHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
 	case errors.Is(err, service.ErrUserNotFound):
 		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusNotFound)
+	case errors.Is(err, service.ErrAccessDenied):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusForbidden)
 	default:
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 	}
@@ -96,6 +99,41 @@ func (h *messageHandler) ReadLatestMessagesFromUser(w http.ResponseWriter, r *ht
 
 }
 
+func (h *messageHandler) ReadMessagesFromUser(w http.ResponseWriter, r *http.Request) {
+	username, ok := r.Context().Value(UserContextKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	targetUser := r.PathValue("username")
+	if targetUser == "" {
+		http.Error(w, `{"error":"username path parameter is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	limit, offset, err := ParseMessagesPagination(r)
+	if err != nil {
+		http.Error(w, `{"error":"invalid limit or offset"}`, http.StatusBadRequest)
+		return
+	}
+
+	messages, err := h.messageService.ReadMessagesFromUser(r.Context(), username, targetUser, limit, offset)
+	switch {
+	case err == nil:
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(messages)
+	case errors.Is(err, service.ErrUserNotFound):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusNotFound)
+	case errors.Is(err, service.ErrReadMessagesFromYourself):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
+	case errors.Is(err, service.ErrInvalidMessagesPagination):
+		http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
+	default:
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+	}
+}
+
 func (h *messageHandler) ListPeers(w http.ResponseWriter, r *http.Request) {
 	username, ok := r.Context().Value(UserContextKey).(string)
 	if !ok {
@@ -119,6 +157,7 @@ func (h *messageHandler) ListPeers(w http.ResponseWriter, r *http.Request) {
 
 func (h *messageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/messages", AuthMiddleware(h.authService)(http.HandlerFunc(h.SendMessage)))
-	mux.Handle("GET /api/messages/{username}", AuthMiddleware(h.authService)(http.HandlerFunc(h.ReadLatestMessagesFromUser)))
+	mux.Handle("GET /api/messages/{username}/latest", AuthMiddleware(h.authService)(http.HandlerFunc(h.ReadLatestMessagesFromUser)))
+	mux.Handle("GET /api/messages/{username}", AuthMiddleware(h.authService)(http.HandlerFunc(h.ReadMessagesFromUser)))
 	mux.Handle("GET /api/peers", AuthMiddleware(h.authService)(http.HandlerFunc(h.ListPeers)))
 }

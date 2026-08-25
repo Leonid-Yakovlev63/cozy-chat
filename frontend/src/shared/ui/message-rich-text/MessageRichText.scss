@@ -4,6 +4,20 @@
   line-height: 1.45;
 }
 
+.message-rich-text__body,
+.message-rich-text__media {
+  margin: 0;
+  max-width: 100%;
+}
+
+.message-rich-text__media {
+  width: fit-content;
+}
+
+.message-rich-text__body {
+  width: 100%;
+}
+
 .message-rich-text__text {
   margin: 0;
   white-space: pre-wrap;

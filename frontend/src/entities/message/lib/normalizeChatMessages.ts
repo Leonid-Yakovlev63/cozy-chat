@@ -23,7 +23,7 @@ function toTrimmedString(value: unknown): string {
 
 /**
  * Оставляет только сообщения с непустым текстом и участниками.
- * Отсекает «пустые» документы/объекты, которые иначе дают пузыри только с бейджем «не прочитано».
+ * Отсекает «пустые» документы/объекты, которые иначе дают пустые пузыри сообщений.
  */
 export function normalizeChatMessages(payload: unknown): ChatMessage[] {
   const list = coerceToArray(payload)

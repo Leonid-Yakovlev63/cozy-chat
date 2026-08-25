@@ -162,16 +162,6 @@
 
 .peer-list__avatar {
   flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-accent-strong);
-  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
-  border: 1px solid color-mix(in srgb, var(--color-accent) 28%, var(--color-border));
 }
 
 .peer-list__body {
@@ -187,6 +177,14 @@
   justify-content: space-between;
   gap: 0.5rem;
   width: 100%;
+}
+
+.peer-list__name-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .peer-list__name {

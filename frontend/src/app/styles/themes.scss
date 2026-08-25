@@ -103,7 +103,40 @@ html[data-theme='mars'] {
   --color-focus: #fb923c;
 }
 
-/* Frutiger Aero: салатово-зелёный фон, белые поверхности; кнопки — «мыльные пузыри» ниже */
+html[data-theme='pink'] {
+  color-scheme: light;
+  --color-bg: #fde8f3;
+  --color-surface: #fff8fc;
+  --color-text: #5c1a42;
+  --color-text-muted: rgba(92, 26, 66, 0.68);
+  --color-placeholder: rgba(92, 26, 66, 0.45);
+  --color-border: rgba(219, 39, 119, 0.2);
+  --color-accent: #f472b6;
+  --color-accent-strong: #ec4899;
+  --color-on-accent: #ffffff;
+  --color-warm: #fbcfe8;
+  --color-danger: #be185d;
+  --color-success: #059669;
+  --color-focus: #f9a8d4;
+}
+
+html[data-theme='fox'] {
+  color-scheme: light;
+  --color-bg: #f5dcc8;
+  --color-surface: #fff6ec;
+  --color-text: #3b2415;
+  --color-text-muted: rgba(59, 36, 21, 0.68);
+  --color-placeholder: rgba(59, 36, 21, 0.44);
+  --color-border: rgba(194, 65, 12, 0.24);
+  --color-accent: #ea580c;
+  --color-accent-strong: #c2410c;
+  --color-on-accent: #fffaf5;
+  --color-warm: #fb923c;
+  --color-danger: #9a3412;
+  --color-success: #166534;
+  --color-focus: #f97316;
+}
+
 html[data-theme='aero'] {
   color-scheme: light;
   --color-bg: #c8ec9e;

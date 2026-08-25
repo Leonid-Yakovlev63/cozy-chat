@@ -1,37 +1,32 @@
 import { parseMessageCodeFences } from '@/shared/lib/parseMessageCodeFences'
-import { isSingleEmojiMessage } from '@/shared/lib/isSingleEmojiMessage'
 import { CodeBlock } from '@/shared/ui/code-block/CodeBlock'
+import { MessageTextContent } from '@/shared/ui/message-rich-text/MessageTextContent'
 import '@/shared/ui/message-rich-text/MessageRichText.scss'
 
 type MessageRichTextProps = {
   content: string
   className?: string
+  imageSize?: 'chat' | 'article'
 }
 
-export function MessageRichText({ content, className }: MessageRichTextProps) {
+export function MessageRichText({ content, className, imageSize = 'chat' }: MessageRichTextProps) {
   const segments = parseMessageCodeFences(content)
-  const hasCode = segments.some((s) => s.type === 'code')
+  const hasCode = segments.some((segment) => segment.type === 'code')
 
   if (!hasCode) {
     const only = segments[0]
     const text = only?.type === 'text' ? only.value : content
-    const loneEmoji = isSingleEmojiMessage(text)
-    const textClass = [className, loneEmoji ? 'message-rich-text__lone-emoji' : ''].filter(Boolean).join(' ')
-    return <p className={textClass}>{text}</p>
+    return <MessageTextContent text={text} className={className} imageSize={imageSize} />
   }
 
   return (
     <div className={['message-rich-text', className].filter(Boolean).join(' ')}>
-      {segments.map((seg, i) => {
-        if (seg.type === 'text') {
-          if (!seg.value) return null
-          return (
-            <div key={i} className="message-rich-text__text">
-              {seg.value}
-            </div>
-          )
+      {segments.map((segment, index) => {
+        if (segment.type === 'text') {
+          if (!segment.value) return null
+          return <MessageTextContent key={index} text={segment.value} imageSize={imageSize} />
         }
-        return <CodeBlock key={i} code={seg.code} language={seg.language} />
+        return <CodeBlock key={index} code={segment.code} language={segment.language} />
       })}
     </div>
   )

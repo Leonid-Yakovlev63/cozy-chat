@@ -74,6 +74,12 @@
   overflow: hidden;
 }
 
+.admin-shell__content > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
 .admin-shell__muted,
 .admin-shell__error {
   margin: 0;

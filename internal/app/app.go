@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/crypto"
+	jwtpkg "github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/jwt"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/infrastructure/validator"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/repository/mongorepository"
 	"github.com/Leonid-Yakovlev63/cozy-chat/internal/service"
@@ -89,9 +90,12 @@ func Run() {
 	messageRepository := mongorepository.NewMessageRepository(db, messageEncryptor)
 	newsRepository := mongorepository.NewNewsRepository(db)
 
-	userService := service.NewUserService(userRepository, appValidator)
-	authService := service.NewAuthService(userService, jwtSecret, 24)
-	messageService := service.NewMessageService(messageRepository, userRepository)
+	passwordHasher := crypto.NewBcryptHasher()
+	tokenProvider := jwtpkg.NewHMACTokenProvider(jwtSecret, 24*time.Hour)
+
+	userService := service.NewUserService(userRepository, messageRepository, appValidator, passwordHasher)
+	authService := service.NewAuthService(userService, tokenProvider, passwordHasher)
+	messageService := service.NewMessageService(messageRepository, userRepository, userService)
 	newsService := service.NewNewsService(newsRepository, userService, appValidator)
 
 	mux := http.NewServeMux()
@@ -108,7 +112,7 @@ func Run() {
 	userHandler := rest.NewUserHandler(userService, authService, appValidator)
 	userHandler.RegisterRoutes(mux)
 
-	adminHandler := rest.NewAdminHandler(userService, authService)
+	adminHandler := rest.NewAdminHandler(userService, authService, appValidator)
 	adminHandler.RegisterRoutes(mux)
 
 	newsHandler := rest.NewNewsHandler(newsService, userService, authService, appValidator)
